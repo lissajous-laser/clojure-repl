@@ -102,38 +102,34 @@ public class Evaluate {
 
             switch (tokens[0]) {
                 case "+":
-                    return CoreFunctions.add(args);
+                    return CoreFunctionsArithmetic.add(args);
                 case "-":
-                    return CoreFunctions.sub(args);
+                    return CoreFunctionsArithmetic.sub(args);
                 case "/":
-                    return CoreFunctions.div(args);
+                    return CoreFunctionsArithmetic.div(args);
                 case "*":
-                    return CoreFunctions.mul(args);
+                    return CoreFunctionsArithmetic.mul(args);
                 case "list":
-                    return CoreFunctions.list(args);
+                    return CoreFunctionsList.list(args);
                 case "cons":
-                    CoreFunctions.cons(args);
+                    CoreFunctionsList.cons(args);
                     break;
                 case "first":
-                    CoreFunctions.first(args);
-                    break;
+                    return CoreFunctionsList.first(args);
                 case "rest":
-                    CoreFunctions.rest(args);
-                    break;
+                    return CoreFunctionsList.rest(args);
                 case "<":
-                    CoreFunctions.lt(args);
-                    break;
+                    return CoreFunctionsComparator.lt(args);
                 case ">":
-                    CoreFunctions.gt(args);
-                    break;
+                    return CoreFunctionsComparator.gt(args);
                 case "=":
-                    CoreFunctions.eq(args);
+                    CoreFunctionsComparator.eq(args);
                     break;
                 case "def":
-                    CoreFunctions.def(args);
+                    CoreFunctionsDefinition.def(args);
                     break;
                 case "fn":
-                    CoreFunctions.fn(args);
+                    CoreFunctionsDefinition.fn(args);
                     break;
                 default:
                     userDefinedFn(tokens);
