@@ -48,13 +48,20 @@ public class CoreFunctionsTest {
     @Test
     public void firstWorks() {
         String[] args = {"(list 3 4 5)"};
-        assertEquals("3", CoreFunctionsList.first(args));
+        try {
+            assertEquals("3", CoreFunctionsList.first(args));
+        } catch (SyntaxException e) {
+        }
+
     }
 
     @Test
     public void restWorks() {
         String[] args = {"(list 3 4 5)"};
-        assertEquals("(list 4 5)", CoreFunctionsList.rest(args));
+        try {
+            assertEquals("(list 4 5)", CoreFunctionsList.rest(args));
+        } catch (SyntaxException e) {
+        }
     }
 
     @Test
@@ -91,5 +98,35 @@ public class CoreFunctionsTest {
     public void gtWorks3() {
         String[] args = {"3"};
         assertEquals("true", CoreFunctionsComparator.gt(args));
+    }
+
+    @Test
+    public void eqWorks1() {
+        String[] args = {"3", "3", "3"};
+        assertEquals("true", CoreFunctionsComparator.eq(args));
+    }
+
+    @Test
+    public void eqWorks2() {
+        String[] args = {"3", "3", "4"};
+        assertEquals("false", CoreFunctionsComparator.eq(args));
+    }
+
+    @Test
+    public void consWorks1() {
+        String[] args = {"3", "(list 4 5)"};
+        try {
+            assertEquals("(list 3 4 5)", CoreFunctionsList.cons(args));
+        } catch (SyntaxException e) {
+        }
+    }
+
+    @Test
+    public void consWorks2() {
+        String[] args = {"(list 3)", "(list 4 5)"};
+        try {
+            assertEquals("(list (list 3) 4 5)", CoreFunctionsList.cons(args));
+        } catch (SyntaxException e) {
+        }
     }
 }

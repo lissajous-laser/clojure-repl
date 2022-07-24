@@ -2,7 +2,7 @@ package com.lissajouslaser;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 
 /**
  * Evalutes inputted Clojure code.
@@ -16,7 +16,6 @@ public class Evaluate {
      * - An expression. Either a definition, an
      * anonymous function or a function
      * application.
-     *
      */
 
     /**
@@ -68,22 +67,116 @@ public class Evaluate {
             return null;
         }
      */
-    public static String[] tokenise(String expr) {
 
-        String[] tokens = expr.trim().split("[ \\(\\)]");
-        // Need to remove first element of array because
-        // regex keeps putting an empty String there.
-        String[] tokensRemoveFirst = Arrays.copyOfRange(tokens, 1, tokens.length);
-        return tokensRemoveFirst;
+    /**
+     * If input is a list it will take apart
+     * function and arguments and put into an array.
+     * Throws SyntaxException if there is a syntax
+     * error.
+     */
+    public static ArrayList<String> tokeniseList(String expr) throws SyntaxException {
+        ArrayList<String> tokens = new ArrayList<>();
 
+        char[] exprAsChars = expr.trim().toCharArray();
+        int i;
+
+        CharArrayReader charArrReader = new CharArrayReader(exprAsChars);
+        // In expression we expect to see at least an opening
+        // and closing parens.
+        int openParens = 0;
+        int closeParens = 0;
+        // Checks if reader position is currently inside a
+        // nested expression.
+        boolean nestedExpr = false;
+        StringBuilder token = new StringBuilder();
+
+        try {
+            while ((i = charArrReader.read()) != -1) {
+
+                // Incorrect syntax.
+                if (closeParens > openParens) {
+                    throw new SyntaxException();
+                }
+
+                switch (i) {
+                    case '(':
+                        openParens++;
+                        // No action on the parens that wraps the
+                        // top level expression.
+                        if (openParens == 1) {
+                            continue;
+                        // Include parens in doubly or deeper nested
+                        // expressions.
+                        } else {
+                            nestedExpr = true;
+                            token.append((char) i);
+                        }
+                        break;
+                    case ')':
+                        closeParens++;
+                        if (nestedExpr) {
+                            token.append((char) i);
+                        // Does not add empty strings to tokens.
+                        } else if (token.length() == 0) {
+                            continue;
+                        } else {
+                            tokens.add(token.substring(0));
+                            token.delete(0, token.length());
+                        }
+                        if (openParens - closeParens == 1) {
+                            nestedExpr = false;
+                        }
+                        break;
+                    case ' ':
+                        // We want to have the whole nested expression
+                        // as a single token. We do not care about
+                        // separating out doubly nested expression or
+                        // deeper because they will be dealt with on
+                        // recursion.
+                        if (nestedExpr) {
+                            token.append((char) i);
+                        // Does not add empty strings to tokens.
+                        // For the case if input text has souble
+                        // spaces.
+                        } else if (token.length() == 0) {
+                            continue;
+                        } else {
+                            tokens.add(token.substring(0));
+                            token.delete(0, token.length());
+                        }
+                        break;
+                    default:
+                        token.append((char) i);
+                        break;
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Error - Exception caught while reading from "
+                    + "CharArrayReader");
+        }
+
+        // Check parens are balanced.
+        if (openParens == closeParens) {
+            return tokens;
+        } else {
+            throw new SyntaxException();
+        }
     }
 
     /**
-     * Checks if you have a list, as opposed to a value.
+     * Checks if you have a list.
      */
     public static boolean isList(String expr) {
         String sanitised = expr.trim();
         return sanitised.matches("\\(.*\\)");
+    }
+
+    /**
+     * Check if you have a value or a symbol.
+     */
+    public static boolean isValueOrSymbol(String expr) {
+        String sanitised = expr.trim();
+        return sanitised.matches("\\w+");
     }
 
     /**
@@ -95,12 +188,16 @@ public class Evaluate {
      * Clojure is dynamically typed, and I needed
      * a way to return values of different types.
      */
-    public String dispatcher(String[] tokens) {
-        if (tokens.length > 1) {
-            // New array of tokens with out function.
-            String[] args = Arrays.copyOfRange(tokens, 1, tokens.length);
+    public String dispatcher(ArrayList<String> tokens) throws SyntaxException {
+        if (tokens.size() > 1) {
 
-            switch (tokens[0]) {
+            // Make array of tokens with only the args.
+            String[] args = new String[tokens.size() - 1];
+            for (int i = 1; i < tokens.size(); i++) {
+                args[i - 1] = tokens.get(i);
+            }
+
+            switch (tokens.get(0)) {
                 case "+":
                     return CoreFunctionsArithmetic.add(args);
                 case "-":
@@ -112,8 +209,7 @@ public class Evaluate {
                 case "list":
                     return CoreFunctionsList.list(args);
                 case "cons":
-                    CoreFunctionsList.cons(args);
-                    break;
+                    return CoreFunctionsList.cons(args);
                 case "first":
                     return CoreFunctionsList.first(args);
                 case "rest":
@@ -123,8 +219,7 @@ public class Evaluate {
                 case ">":
                     return CoreFunctionsComparator.gt(args);
                 case "=":
-                    CoreFunctionsComparator.eq(args);
-                    break;
+                    return CoreFunctionsComparator.eq(args);
                 case "def":
                     CoreFunctionsDefinition.def(args);
                     break;
@@ -132,11 +227,38 @@ public class Evaluate {
                     CoreFunctionsDefinition.fn(args);
                     break;
                 default:
-                    userDefinedFn(tokens);
+                    userDefinedFn(args);
                     break;
             }
         }
         return " ";
+    }
+
+    /**
+     * Performs evaluation of expression, including evaluation
+     * of nesteed expressions.
+     */
+    public String eval(String expr) throws SyntaxException {
+        if (isList(expr)) {
+            ArrayList<String> tokens = tokeniseList(expr);
+
+            // Create new expression where aguments have been
+            // evaluated.
+            ArrayList<String> tokensWithEvaluatedArgs = new ArrayList<>();
+
+            tokensWithEvaluatedArgs.add(tokens.get(0));
+
+            for (int i = 1; i < tokens.size(); i++) {
+                tokensWithEvaluatedArgs.add(eval(tokens.get(i)));
+            }
+            return dispatcher(tokensWithEvaluatedArgs);
+        }
+        if (isValueOrSymbol(expr)) {
+            return expr;
+        } else {
+            throw new SyntaxException();
+        }
+
     }
 
     void userDefinedFn(String[] tokens) {

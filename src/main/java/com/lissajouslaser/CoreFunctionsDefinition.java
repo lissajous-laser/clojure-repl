@@ -4,7 +4,7 @@ package com.lissajouslaser;
  * Utility class which defines basic list functions
  * for defining variables and anonymous functions.
  */
-public class CoreFunctionsDefinition {
+public final class CoreFunctionsDefinition {
 
     private CoreFunctionsDefinition() {}
 

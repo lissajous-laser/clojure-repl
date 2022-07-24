@@ -1,8 +1,11 @@
 package com.lissajouslaser;
 
+import java.util.ArrayList;
+
 /**
  * Utility class which defines basic list functions
- * in the langauge.
+ * in the langauge. Clojure lists are singly linked
+ * lists.
  */
 public final class CoreFunctionsList {
 
@@ -29,14 +32,42 @@ public final class CoreFunctionsList {
         return returnString.substring(0);
     }
 
-    static void cons(String[] args) {
+    /**
+     * Adds an element to the front of the list.
+     */
+    public static String cons(String[] args) throws SyntaxException {
+        // Arguments to cons should be the thing to be added to
+        // the list and the list.
+        if (args.length != 2) {
+            return "Error - wrong number of args passed to clojure.core/cons";
+        }
+        // Check second arg is a list.
+        if (Evaluate.isList(args[1])) {
+            ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[1]);
 
+            if (!tokensOfList.get(0).equals("list")) {
+                return "Error - illegal argument passed to clojure.core/cons";
+            }
+            // Create output string with added element.
+            StringBuilder returnString = new StringBuilder();
+            returnString.append("(list ");
+            returnString.append(args[0] + " ");
+
+            for (int i = 1; i < tokensOfList.size(); i++) {
+                returnString.append(tokensOfList.get(i) + " ");
+            }
+            // Delete last space character.
+            returnString.deleteCharAt(returnString.length() - 1);
+            returnString.append(")");
+            return returnString.substring(0);
+        }
+        return "Error - illegal argument passed to clojure.core/cons";
     }
 
     /**
      * Returns the first item of a list.
      */
-    public static String first(String[] args) {
+    public static String first(String[] args) throws SyntaxException {
         // The only arg passed to first should be a single list.
         // First check there is one arg.
         if (args.length != 1) {
@@ -44,19 +75,20 @@ public final class CoreFunctionsList {
         }
         // Check arg is a list.
         if (Evaluate.isList(args[0])) {
-            String[] tokensOfList = Evaluate.tokenise(args[0]);
+            ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[0]);
+
 
             // For empty list ()
-            if (tokensOfList.length == 0) {
+            if (tokensOfList.size() == 0) {
                 return "nil";
             }
-            if (!tokensOfList[0].equals("list")) {
+            if (!tokensOfList.get(0).equals("list")) {
                 return "Error - illegal argument passed to clojure.core/first";
             // For empty list (list)
-            } else if (tokensOfList.length == 1) {
+            } else if (tokensOfList.size() == 1) {
                 return "nil";
             } else {
-                return tokensOfList[1];
+                return tokensOfList.get(1);
             }
         }
         return "Error - Illegal argument passed to clojure.core/first";
@@ -65,7 +97,7 @@ public final class CoreFunctionsList {
     /**
      * Returns a list without its first item.
      */
-    public static String rest(String[] args) {
+    public static String rest(String[] args) throws SyntaxException {
         // The only arg passed to first should be a single list.
         // First check there is one arg.
         if (args.length != 1) {
@@ -73,26 +105,25 @@ public final class CoreFunctionsList {
         }
         // Check arg is a list.
         if (Evaluate.isList(args[0])) {
-            String[] tokensOfList = Evaluate.tokenise(args[0]);
+            ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[0]);
 
             // For empty list ()
-            if (tokensOfList.length == 0) {
+            if (tokensOfList.size() == 0) {
                 return "(list)";
             }
-            if (!tokensOfList[0].equals("list")) {
+            if (!tokensOfList.get(0).equals("list")) {
                 return "Error - illegal argument passed to clojure.core/rest";
             // For empty list (list) or list with one element.
-            } else if (tokensOfList.length == 1 || tokensOfList.length == 2) {
+            } else if (tokensOfList.size() == 1 || tokensOfList.size() == 2) {
                 return "(list)";
             } else {
-                // Recreate string withtout first element.
+                // Recreate string without first element.
                 StringBuilder returnString = new StringBuilder();
 
                 returnString.append("(list ");
 
-                for (int i = 2; i < tokensOfList.length; i++) {
-                    returnString.append(tokensOfList[i]);
-                    returnString.append(" ");
+                for (int i = 2; i < tokensOfList.size(); i++) {
+                    returnString.append(tokensOfList.get(i) + " ");
                 }
                 // Delete last space character.
                 returnString.deleteCharAt(returnString.length() - 1);

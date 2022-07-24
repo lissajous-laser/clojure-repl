@@ -54,8 +54,21 @@ public final class CoreFunctionsComparator {
         }
     }
 
-    static void eq(String[] args) {
+    /**
+     * Determines if each successive element is equal,
+     * eg. an expression (= 3 3) or (= false false false)
+     * evaluates to true. A single arg expression (= 3)
+     * evaluates to true.
+     */
+    public static String eq(String[] args) {
+        String init = args[0];
 
+        String result = Arrays.stream(args)
+                .reduce(init, (x, y) -> x.equals(y) ? y : "¡!¡!");
+        if ("¡!¡!".equals(result)) {
+            return "false";
+        } else {
+            return "true";
+        }
     }
-
 }
