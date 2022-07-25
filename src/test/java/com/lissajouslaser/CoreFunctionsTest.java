@@ -46,13 +46,27 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void firstWorks() {
+    public void firstWorks1() {
         String[] args = {"(list 3 4 5)"};
         try {
             assertEquals("3", CoreFunctionsList.first(args));
         } catch (SyntaxException e) {
         }
+    }
 
+    @Test
+    public void firstWorks2() {
+        String[] args = {"(list 5)"};
+        try {
+            assertEquals("5", CoreFunctionsList.first(args));
+        } catch (SyntaxException e) {
+        }
+    }
+
+    @Test
+    public void firstWorks3() throws SyntaxException {
+        String[] args = {"(list)"};
+        assertEquals("nil", CoreFunctionsList.first(args));
     }
 
     @Test
@@ -129,4 +143,53 @@ public class CoreFunctionsTest {
         } catch (SyntaxException e) {
         }
     }
+
+    @Test
+    public void andWorks1() throws SyntaxException {
+        String[] args = {"true", "true", "3"};
+        assertEquals("true", CoreFunctionsBoolean.and(args));
+    }
+
+    @Test
+    public void andWorks2() throws SyntaxException {
+        String[] args = {"false", "nil", "false"};
+        assertEquals("false", CoreFunctionsBoolean.and(args));
+    }
+
+    @Test
+    public void orWorks1() throws SyntaxException {
+        String[] args = {"false", "nil", "true"};
+        assertEquals("true", CoreFunctionsBoolean.or(args));
+    }
+
+    @Test
+    public void orWorks2() throws SyntaxException {
+        String[] args = {"false", "nil", "false"};
+        assertEquals("false", CoreFunctionsBoolean.and(args));
+    }
+
+    @Test
+    public void notWorks1() throws SyntaxException {
+        String[] args = {"false"};
+        assertEquals("true", CoreFunctionsBoolean.not(args));
+    }
+
+    @Test
+    public void notWorks2() throws SyntaxException {
+        String[] args = {"true"};
+        assertEquals("false", CoreFunctionsBoolean.not(args));
+    }
+
+    @Test
+    public void notWorks3() throws SyntaxException {
+        String[] args = {"nil"};
+        assertEquals("true", CoreFunctionsBoolean.not(args));
+    }
+
+    @Test
+    public void notWorks4() throws SyntaxException {
+        String[] args = {"-200"};
+        assertEquals("false", CoreFunctionsBoolean.not(args));
+    }
+
 }

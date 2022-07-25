@@ -65,7 +65,8 @@ public final class CoreFunctionsList {
     }
 
     /**
-     * Returns the first item of a list.
+     * Returns the first item of a list. Passing an empty list
+     * to first returns null.
      */
     public static String first(String[] args) throws SyntaxException {
         // The only arg passed to first should be a single list.
@@ -73,25 +74,25 @@ public final class CoreFunctionsList {
         if (args.length != 1) {
             return "Error - wrong number of args passed to clojure.core/first";
         }
-        // Check arg is a list.
+        // Check if arg is a list.
         if (Evaluate.isList(args[0])) {
             ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[0]);
-
 
             // For empty list ()
             if (tokensOfList.size() == 0) {
                 return "nil";
             }
             if (!tokensOfList.get(0).equals("list")) {
-                return "Error - illegal argument passed to clojure.core/first";
+                return "Error - illegal argument passed to clojure.core/first - ONE";
             // For empty list (list)
             } else if (tokensOfList.size() == 1) {
                 return "nil";
             } else {
                 return tokensOfList.get(1);
             }
+        } else  {
+            return "Error - Illegal argument passed to clojure.core/first - TWO";
         }
-        return "Error - Illegal argument passed to clojure.core/first";
     }
 
     /**

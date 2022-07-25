@@ -3,11 +3,14 @@ package com.lissajouslaser;
 import java.io.CharArrayReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Evalutes inputted Clojure code.
  */
 public class Evaluate {
+    private Map<String, String> definitions;
 
     /*
      * Possible Clojure forms:
@@ -18,55 +21,28 @@ public class Evaluate {
      * application.
      */
 
-    /**
-     * Check that the number of opening and closing parens
-     * are equal, and that there are never more closing
-     * parens entered than opening parens entered at any
-     * point in the expression.
+    /*
+     * Limitations:
+     * - No reader macro for non-evaluating lists, eg '()
+     *   needs to be writtern as (list).
+     * - Consing a value onto nil has not been implmented.
      */
-    public boolean checkBalancedParens(String expr) {
-        char[] chars = expr.toCharArray();
 
-        CharArrayReader charArrayReader = new CharArrayReader(chars);
-        int character;
-        int openParens = 0;
-        int closeParens = 0;
+    public Evaluate() {
+        definitions = new HashMap<>();
+    }
 
-        try {
-            while ((character = charArrayReader.read()) != -1) {
-                switch (character) {
-                    case '(':
-                        openParens++;
-                        break;
-                    case ')':
-                        closeParens++;
-                        if (closeParens > openParens) {
-                            return false;
-                        }
-                        break;
-                    default:
-                        break;
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("I/O error has occurred");
-        }
-        return openParens == closeParens;
+    public Map<String, String> getDefinitions() {
+        return definitions;
     }
 
     /**
-     * If input is a list it will take apart
-     * functions and arguments and put into an array.
-     * If input is not a list it will check there is
-     * only one value.
-     *  if (sanitised.matches("[^ ]+")) {
-            String[] arr = new String[1];
-            arr[0] = sanitised;
-            return arr;
-        } else {
-            return null;
-        }
+     * Adds a new symbol-value mapping, overwrites any
+     * existing pairing.
      */
+    public void addDefinedValues(String key, String value) {
+        definitions.put(key, value);
+    }
 
     /**
      * If input is a list it will take apart
@@ -166,17 +142,30 @@ public class Evaluate {
     /**
      * Checks if you have a list.
      */
-    public static boolean isList(String expr) {
-        String sanitised = expr.trim();
-        return sanitised.matches("\\(.*\\)");
+    static boolean isList(String expr) {
+        return expr.trim().matches("\\(.*\\)");
     }
 
     /**
-     * Check if you have a value or a symbol.
+     * Check if you have a number.
      */
-    public static boolean isValueOrSymbol(String expr) {
-        String sanitised = expr.trim();
-        return sanitised.matches("\\w+");
+    static boolean isNumber(String expr) {
+        return expr.trim().matches("-?\\d+");
+    }
+
+    /**
+     * Check if you have a symbol in the valid format.
+     */
+    static boolean isValidSymbol(String expr) {
+        return expr.trim().matches("[A-Za-z_-][\\w-?]*");
+    }
+
+    /**
+     * Check if you have a boolean. Nil is logical false in
+     * Clojure.
+     */
+    static boolean isBool(String expr) {
+        return expr.trim().matches("(true)|(false)|(nil)");
     }
 
     /**
@@ -189,49 +178,46 @@ public class Evaluate {
      * a way to return values of different types.
      */
     public String dispatcher(ArrayList<String> tokens) throws SyntaxException {
-        if (tokens.size() > 1) {
 
-            // Make array of tokens with only the args.
-            String[] args = new String[tokens.size() - 1];
-            for (int i = 1; i < tokens.size(); i++) {
-                args[i - 1] = tokens.get(i);
-            }
-
-            switch (tokens.get(0)) {
-                case "+":
-                    return CoreFunctionsArithmetic.add(args);
-                case "-":
-                    return CoreFunctionsArithmetic.sub(args);
-                case "/":
-                    return CoreFunctionsArithmetic.div(args);
-                case "*":
-                    return CoreFunctionsArithmetic.mul(args);
-                case "list":
-                    return CoreFunctionsList.list(args);
-                case "cons":
-                    return CoreFunctionsList.cons(args);
-                case "first":
-                    return CoreFunctionsList.first(args);
-                case "rest":
-                    return CoreFunctionsList.rest(args);
-                case "<":
-                    return CoreFunctionsComparator.lt(args);
-                case ">":
-                    return CoreFunctionsComparator.gt(args);
-                case "=":
-                    return CoreFunctionsComparator.eq(args);
-                case "def":
-                    CoreFunctionsDefinition.def(args);
-                    break;
-                case "fn":
-                    CoreFunctionsDefinition.fn(args);
-                    break;
-                default:
-                    userDefinedFn(args);
-                    break;
-            }
+        // Make array of tokens with only the args.
+        String[] args = new String[tokens.size() - 1];
+        for (int i = 1; i < tokens.size(); i++) {
+            args[i - 1] = tokens.get(i);
         }
-        return " ";
+        switch (tokens.get(0)) {
+            case "+":
+                return CoreFunctionsArithmetic.add(args);
+            case "-":
+                return CoreFunctionsArithmetic.sub(args);
+            case "/":
+                return CoreFunctionsArithmetic.div(args);
+            case "*":
+                return CoreFunctionsArithmetic.mul(args);
+            case "list":
+                return CoreFunctionsList.list(args);
+            case "cons":
+                return CoreFunctionsList.cons(args);
+            case "first":
+                return CoreFunctionsList.first(args);
+            case "rest":
+                return CoreFunctionsList.rest(args);
+            case "<":
+                return CoreFunctionsComparator.lt(args);
+            case ">":
+                return CoreFunctionsComparator.gt(args);
+            case "=":
+                return CoreFunctionsComparator.eq(args);
+            case "and":
+                return CoreFunctionsBoolean.and(args);
+            case "or":
+                return CoreFunctionsBoolean.or(args);
+            case "not":
+                return CoreFunctionsBoolean.not(args);
+            default:
+                userDefinedFn(args);
+                // TODO - handler for user defined functions
+                return " ";
+        }
     }
 
     /**
@@ -239,29 +225,91 @@ public class Evaluate {
      * of nesteed expressions.
      */
     public String eval(String expr) throws SyntaxException {
+
         if (isList(expr)) {
             ArrayList<String> tokens = tokeniseList(expr);
 
-            // Create new expression where aguments have been
-            // evaluated.
-            ArrayList<String> tokensWithEvaluatedArgs = new ArrayList<>();
+            // def, fn, and if are 'special forms' that cannot be
+            // evaluated like normal expressions.
+            if ("def".equals(tokens.get(0))) {
 
-            tokensWithEvaluatedArgs.add(tokens.get(0));
+                return def(tokens);
+            } else if ("fn".equals(tokens.get(0))) {
+                // TODO - probably going to be hard.
+                return "TODO";
+            } else if ("if".equals(tokens.get(0))) {
+                return ifClj(tokens);
+            } else {
+                // Evaluating normal expressions.
+                // Create a new expression where aguments of the old
+                // expression have been evaluated.
+                ArrayList<String> tokensWithEvaluatedArgs = new ArrayList<>();
+                tokensWithEvaluatedArgs.add(tokens.get(0));
 
-            for (int i = 1; i < tokens.size(); i++) {
-                tokensWithEvaluatedArgs.add(eval(tokens.get(i)));
+                for (int i = 1; i < tokens.size(); i++) {
+                    tokensWithEvaluatedArgs.add(eval(tokens.get(i)));
+                }
+                return dispatcher(tokensWithEvaluatedArgs);
             }
-            return dispatcher(tokensWithEvaluatedArgs);
         }
-        if (isValueOrSymbol(expr)) {
+        if (isNumber(expr) || isBool(expr)) {
             return expr;
+        } else if (isValidSymbol(expr)) {
+            String value = definitions.get(expr);
+            if (value == null) {
+                return "Error - Unable to resolve symbol";
+            } else {
+                return value;
+            }
         } else {
             throw new SyntaxException();
         }
+    }
 
+    /**
+     * Allows you to define values.
+     */
+    public String def(ArrayList<String> tokens) {
+        final int numOfArgs = 2;
+
+        if (tokens.size() != numOfArgs + 1) {
+            return "Error - wrong number of args passed to clojure.core/def";
+        }
+        if (Evaluate.isValidSymbol(tokens.get(1))) {
+            definitions.put(tokens.get(1), tokens.get(2));
+            return "user/" + tokens.get(2);
+        }
+        return "Error - Illegal argument passed to clojure.core/def";
+    }
+
+    /**
+     * Conditional if expression. Named ifClj because if is a
+     * reserved keyword. In Clojure, false and nil are falsey
+     * values, and all others are truthy values. If the test
+     * for an if expression with an else clause is false, nil
+     * is returned.
+     */
+    public String ifClj(ArrayList<String> tokens) throws SyntaxException {
+        final int listItemsWhenTwoArgs = 3;
+        final int listItemsWhenThreeArgs = 4;
+
+        if (tokens.size() < listItemsWhenTwoArgs
+                || tokens.size() > listItemsWhenThreeArgs + 1) {
+            return "Error - wrong nmber of args passed to clojure.core/if";
+        }
+        String test = eval(tokens.get(1));
+        if (CoreFunctionsBoolean.isNilOrFalse(test)) {
+            if (tokens.size() == listItemsWhenThreeArgs) {
+                return eval(tokens.get(listItemsWhenThreeArgs - 1));
+            } else {
+                return "nil";
+            }
+        } else {
+            return eval(tokens.get(2));
+        }
     }
 
     void userDefinedFn(String[] tokens) {
-
     }
+
 }
