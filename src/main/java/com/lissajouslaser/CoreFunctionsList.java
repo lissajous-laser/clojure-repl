@@ -108,10 +108,6 @@ public final class CoreFunctionsList {
         if (Evaluate.isList(args[0])) {
             ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[0]);
 
-            // For empty list ()
-            if (tokensOfList.size() == 0) {
-                return "(list)";
-            }
             if (!tokensOfList.get(0).equals("list")) {
                 return "Error - illegal argument passed to clojure.core/rest";
             // For empty list (list) or list with one element.

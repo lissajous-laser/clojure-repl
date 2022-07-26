@@ -60,7 +60,8 @@ public class EvaluateTest {
     @Test
     public void evalWorks2() throws SyntaxException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("(list 3 4 5)", evaluate.eval("(cons (+ 1 2) (list 4 5))"));
+        assertEquals("(list 3 4 5)",
+                evaluate.eval("(cons (+ 1 2) (list 4 5))"));
     }
 
     @Test
@@ -88,6 +89,19 @@ public class EvaluateTest {
     }
 
     @Test
+    public void evalWorks7() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        assertEquals("(list -3 -4 -5)",
+                evaluate.eval("(cons -3 (cons -4 (list -5)))"));
+    }
+
+    @Test
+    public void evalWorks8() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        assertEquals("(list -3)", evaluate.eval("(cons -3 (list))"));
+    }
+
+    @Test
     public void isValidSymbolWorks1() throws SyntaxException {
         assertTrue(Evaluate.isValidSymbol("a-number-4"));
     }
@@ -111,7 +125,7 @@ public class EvaluateTest {
     public void defWorks1() throws SyntaxException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a 45)");
-        assertEquals("45", evaluate.getDefinitions().get("a"));
+        assertEquals("45", evaluate.getDefinedValues().get("a"));
     }
 
     @Test
@@ -151,4 +165,35 @@ public class EvaluateTest {
         Evaluate evaluate = new Evaluate();
         assertEquals("nil", evaluate.eval("(if false 4)"));
     }
+
+    @Test
+    public void defnStoresFunction() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn increment (n) (+ n 1))");
+        assertTrue(evaluate.getUserDefinedFunctions().get("increment") != null);
+    }
+
+    @Test
+    public void userDefinedFnIsUsed1() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn increment (n) (+ n 1))");
+        assertEquals("4", evaluate.eval("(increment 3)"));
+    }
+
+    @Test
+    public void userDefinedFnIsUsed2() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn product-1st-2-list-items (l)"
+                + " (* (first l) (first (rest l))))");
+        assertEquals("42", evaluate.eval("(product-1st-2-list-items (list 6 7))"));
+    }
+
+    @Test
+    public void userDefinedFnIsUsed3() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn factorial (n) (if (= n 1) 1 (* n (factorial (- n 1)))))");
+        assertEquals("6", evaluate.eval("(factorial 3)"));
+    }
+
+
 }

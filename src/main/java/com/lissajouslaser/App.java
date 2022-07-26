@@ -12,22 +12,13 @@ public final class App {
      * @param args The arguments of the program.
      */
     public static void main(String[] args) throws SyntaxException {
-        System.out.println("Hello World!");
-
         Evaluate evaluate = new Evaluate();
-        // System.out.println(evaluate.eval("(if false 4)"));
-        // evaluate.eval("(list)");
-        System.out.println(evaluate.eval("(list)"));
-        System.out.println("--");
-        System.out.println(evaluate.eval("(list 2)"));
-        // System.out.println(evaluate.eval("(list (list 3) 4)"));
-        // System.out.println(evaluate.eval("(first (list 3 4))"));
-
-        // String[] emptylist = {""};
-        // System.out.println(CoreFunctionsList.list(emptylist));
+        // evaluate.eval("(defn product-1st-2-list-items (l)"
+        //         + " (* (first l) (first (rest l) )))");
+        // System.out.println(evaluate.eval("(product-1st-2-list-items (list 6 7))"));
         // System.out.println();
-        // System.out.println(evaluate.eval("(first (list))"));
 
-
+        evaluate.eval("(defn factorial (n) (if (= n 1) 1 (* n (factorial (- n 1)))))");
+        System.out.println(evaluate.eval("(factorial 3)"));
     }
 }

@@ -48,6 +48,10 @@ public final class CoreFunctionsArithmetic {
      * Multiply args.
      */
     public static String mul(String[] args) {
+        System.out.println("Just before multiplying, CoreFunctionsArithmetic:51"); ///
+        for (String str: args) { ///
+            System.out.println("arg: " + str); ///
+        } ///
         try {
             int product = Arrays.stream(args)
                     .mapToInt(x -> Integer.valueOf(x))

@@ -79,6 +79,12 @@ public class CoreFunctionsTest {
     }
 
     @Test
+    public void restWorks2() throws SyntaxException {
+        String[] args = {"(list)"};
+        assertEquals("(list)", CoreFunctionsList.rest(args));
+    }
+
+    @Test
     public void ltWorks1() {
         String[] args = {"3", "4", "5"};
         assertEquals("true", CoreFunctionsComparator.lt(args));
