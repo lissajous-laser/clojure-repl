@@ -22,6 +22,7 @@ import java.util.Map;
  * - Does not support anonymous functions.
  * - No support for higher order functions.
  * - No support for partial function application
+ * - No support for multiple expressions
  */
 
 /**
@@ -176,12 +177,13 @@ public class Evaluate {
      * Check if you have a symbol in the valid format.
      */
     static boolean isValidSymbol(String expr) {
-        return expr.trim().matches("[A-Za-z_-][\\w-?]*");
+        boolean matchesRegex = expr.trim().matches("[A-Za-z_-][\\w-?]*");
+        return  matchesRegex && !isBool(expr);
     }
 
     /**
-     * Check if you have a boolean. Nil is logical false in
-     * Clojure.
+     * Check if you have a boolean. Included nil here for
+     * convenience.
      */
     static boolean isBool(String expr) {
         return expr.trim().matches("true|false|nil");
@@ -253,6 +255,9 @@ public class Evaluate {
         if (isList(expr)) {
             ArrayList<String> tokens = tokeniseList(expr);
 
+            if (tokens.isEmpty()) {
+                throw new SyntaxException("() is not supported.");
+            }
             switch (tokens.get(0)) {
                 case "def":
                     // def is a special form: symbol representing name
@@ -439,5 +444,4 @@ public class Evaluate {
             return fn.applyFn(args, this);
         }
     }
-
 }

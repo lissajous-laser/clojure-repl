@@ -4,7 +4,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-// import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests for CoreFunctions class.
@@ -205,5 +204,69 @@ public class CoreFunctionsTest {
     public void notWorks4() throws SyntaxException, ArityException {
         String[] args = {"-200"};
         assertEquals("false", CoreFunctionsBoolean.not(args));
+    }
+
+    @Test
+    public void consingOntoANonListThrowsException() {
+        String[] args = {"3", "true"};
+        assertThrows(SyntaxException.class, () -> {
+            CoreFunctionsList.cons(args);
+        });
+    }
+
+    @Test
+    public void consingWithThreeArgsThrowsException() {
+        String[] args = {"3", "4", "(list 5 6)"};
+        assertThrows(ArityException.class, () -> {
+            CoreFunctionsList.cons(args);
+        });
+    }
+
+    @Test
+    public void callingFirstWithANonListThrowsException() {
+        String[] args = {"true"};
+        assertThrows(SyntaxException.class, () -> {
+            CoreFunctionsList.first(args);
+        });
+    }
+
+    @Test
+    public void callingFirstWithTwoArgsThrowsException() {
+        String[] args = {"(list 1 2)", "(list 3 4)"};
+        assertThrows(ArityException.class,  () -> {
+            CoreFunctionsList.first(args);
+        });
+    }
+
+    @Test
+    public void callingRestWithANonListThrowsException() {
+        String[] args = {"true"};
+        assertThrows(SyntaxException.class, () -> {
+            CoreFunctionsList.rest(args);
+        });
+    }
+
+    @Test
+    public void callingRestWithTwoArgsThrowsException() {
+        String[] args = {"(list 1 2)", "(list 3 4)"};
+        assertThrows(ArityException.class,  () -> {
+            CoreFunctionsList.rest(args);
+        });
+    }
+
+    @Test
+    public void callingModWithOneArgThrowsException() {
+        String[] args = {"80"};
+        assertThrows(ArityException.class,  () -> {
+            CoreFunctionsArithmetic.mod(args);
+        });
+    }
+
+    @Test
+    public void callingNotWithTwoArgsThrowsException() {
+        String[] args = {"true", "false"};
+        assertThrows(ArityException.class,  () -> {
+            CoreFunctionsBoolean.not(args);
+        });
     }
 }

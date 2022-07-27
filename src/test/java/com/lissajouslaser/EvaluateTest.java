@@ -282,4 +282,60 @@ public class EvaluateTest {
         evaluate.eval("(defn not (x) nil)");
         assertEquals("true", evaluate.eval("(not false)"));
     }
+
+    @Test
+    public void namingAFunctionWithANumberThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(defn 3 (a) (* a a))");
+        });
+    }
+
+    @Test
+    public void notHavingFunctionParametersInAListThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(defn square a (* a a))");
+        });
+    }
+
+    @Test
+    public void passingFourArgsToDefnThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(ArityException.class, () -> {
+            evaluate.eval("(defn square [a] (* a a) (* a a))");
+        });
+    }
+
+    @Test
+    public void callingAnUndefinedFuctionThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(expt 2 3)");
+        });
+    }
+
+    @Test
+    public void namingValueWithBooleanThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(def true true)");
+        });
+    }
+
+    @Test
+    public void invalidValueThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("$50");
+        });
+    }
+
+    @Test
+    public void usingUndefinedValueThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(+ a 3");
+        });
+    }
 }
