@@ -147,8 +147,7 @@ public class Evaluate {
                 }
             }
         } catch (IOException e) {
-            System.out.println("Error - Exception caught while reading from "
-                    + "CharArrayReader");
+            System.out.println(e);
         }
 
         // Check parens are balanced.
@@ -197,9 +196,13 @@ public class Evaluate {
      * Clojure is dynamically typed, and I needed
      * a way to return values of different types.
      */
-    String dispatcher(ArrayList<String> tokens) throws SyntaxException {
+    String dispatcher(ArrayList<String> tokens)
+            throws SyntaxException, ArithmeticException,
+            NumberFormatException, ArityException {
 
-        // Make array of tokens with only the args.
+        // Make array of tokens with only the args. Useful for
+        // variable arity functions that can be evaluated using
+        // collection streams.
         String[] args = new String[tokens.size() - 1];
         for (int i = 1; i < tokens.size(); i++) {
             args[i - 1] = tokens.get(i);
@@ -244,7 +247,9 @@ public class Evaluate {
      * Performs evaluation of expression, including evaluation
      * of nesteed expressions.
      */
-    public String eval(String expr) throws SyntaxException {
+    public String eval(String expr)
+            throws SyntaxException, ArithmeticException,
+            NumberFormatException, ArityException {
         if (isList(expr)) {
             ArrayList<String> tokens = tokeniseList(expr);
 
@@ -290,15 +295,16 @@ public class Evaluate {
     /**
      * Allows you to define values.
      */
-    public String def(ArrayList<String> tokens) throws SyntaxException {
+    public String def(ArrayList<String> tokens)
+            throws SyntaxException, ArityException {
         final int numOfArgs = 2;
 
         if (tokens.size() != numOfArgs + 1) {
-            return "Error - wrong number of args passed to clojure.core/def";
+            throw new ArityException("clojure.core/def");
         }
         if (isValidSymbol(tokens.get(1))) {
-            definedValues.put(tokens.get(1), tokens.get(2));
-            return "user/" + tokens.get(2);
+            definedValues.put(tokens.get(1), eval(tokens.get(2)));
+            return "user/" + tokens.get(1);
         }
         throw new SyntaxException("Illegal name passed to clojure.core/def");
     }
@@ -310,7 +316,8 @@ public class Evaluate {
      * for an if expression with an else clause is false, nil
      * is returned.
      */
-    public String ifClj(ArrayList<String> tokens) throws SyntaxException {
+    public String ifClj(ArrayList<String> tokens)
+            throws SyntaxException, ArityException {
         final int listSizeTwoArgs = 3;
         final int listSizeThreeArgs = 4;
         final int testIdx = 1;
@@ -320,7 +327,7 @@ public class Evaluate {
 
         if (tokens.size() < listSizeTwoArgs
                 || tokens.size() > listSizeThreeArgs) {
-            return "Error - wrong nmber of args passed to clojure.core/if";
+            throw new ArityException("clojure.core/if");
         }
         String test = eval(tokens.get(testIdx));
         if (CoreFunctionsBoolean.isNilOrFalse(test)) {
@@ -337,7 +344,8 @@ public class Evaluate {
     /**
      * Allows creation of functions.
      */
-    public String defn(ArrayList<String> tokens) throws SyntaxException {
+    public String defn(ArrayList<String> tokens)
+            throws SyntaxException, ArityException {
         final int listSize = 4;
         final int bodyIdx = 3;
         String fnName = tokens.get(1);
@@ -345,7 +353,7 @@ public class Evaluate {
         String body = tokens.get(bodyIdx);
 
         if (tokens.size() != listSize) {
-            return "Error - wrong nmber of args passed to clojure.core/defn";
+            throw new ArityException("clojure.core/defn");
         }
         if (!isValidSymbol(fnName)) {
             throw new SyntaxException("Illegal name passed to "
@@ -396,7 +404,6 @@ public class Evaluate {
                 for (int i = 1; i < tokens.size(); i++) {
                     isValidExprResults.add(isValidExpr(tokens.get(i), fnName));
                 }
-                // TODO - may need to change all Arrays to ArrayList
                 String[] isValidExprResultsArr = new
                         String[isValidExprResults.size()];
                 for (int i = 0; i < isValidExprResults.size(); i++) {
@@ -411,7 +418,7 @@ public class Evaluate {
         } else if (isNumber(expr) || isBool(expr) || isValidSymbol(expr)) {
             return "true";
         } else {
-            throw new SyntaxException("Unsupported input.");
+            throw new SyntaxException("Illegal body passed to clojure.core/defn");
         }
     }
 
@@ -420,12 +427,12 @@ public class Evaluate {
      * to evaluate.
      */
     String userDefined(ArrayList<String> tokens)
-            throws SyntaxException {
+            throws SyntaxException, ArityException {
         String fnName = tokens.get(0);
         Function fn = userDefinedFunctions.get(fnName);
         if (fn == null) {
             throw new SyntaxException("Unable to resolve: " + fnName
-                    + " in this context");
+                    + " in this context.");
         } else {
             ArrayList<String> args = new
                     ArrayList<>(tokens.subList(1, tokens.size()));

@@ -1,25 +1,17 @@
 package com.lissajouslaser;
 
 /**
- * Hello world!
+ * Class for starting application.
  */
 public final class App {
     private App() {
     }
 
     /**
-     * Says hello to the world.
-     * @param args The arguments of the program.
+     * Instantiates Loop and starts repl.
      */
     public static void main(String[] args) throws SyntaxException {
         Loop repl = new Loop();
         repl.start();
-
-        // try {
-        //     throw new ArithmeticException("a problem");
-        // } catch (Exception e) {
-        //     System.out.println(e);
-        // }
-
     }
 }

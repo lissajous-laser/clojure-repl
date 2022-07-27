@@ -12,10 +12,9 @@ public final class CoreFunctionsList {
     private CoreFunctionsList() {}
 
     /**
-     *  For case list we return the expression as it was when
-     *  passed to tokenise, as we do not want to evaluate it.
-     *  I have decided to not use the clojure reader macro for
-     *  lists (the single quote) for simplicity.
+     * Passing list recursively through eval is better than
+     * returning it as an unaltered expression, becuase any
+     * sub-expressions in the list will be evaluated.
      */
     public static String list(String[] args) {
         StringBuilder returnString = new StringBuilder();
@@ -35,11 +34,12 @@ public final class CoreFunctionsList {
     /**
      * Adds an element to the front of the list.
      */
-    public static String cons(String[] args) throws SyntaxException {
+    public static String cons(String[] args)
+            throws SyntaxException, ArityException {
         // Arguments to cons should be the thing to be added to
         // the list and the list.
         if (args.length != 2) {
-            return "Error - wrong number of args passed to clojure.core/cons";
+            throw new ArityException("clojure.core/cons");
         }
         // Check second arg is a list.
         if (Evaluate.isList(args[1])) {
@@ -68,11 +68,12 @@ public final class CoreFunctionsList {
      * Returns the first item of a list. Passing an empty list
      * to first returns null.
      */
-    public static String first(String[] args) throws SyntaxException {
+    public static String first(String[] args)
+            throws SyntaxException, ArityException {
         // The only arg passed to first should be a single list.
         // First check there is one arg.
         if (args.length != 1) {
-            return "Error - wrong number of args passed to clojure.core/first";
+            throw new ArityException("clojure.core/first");
         }
         // Check if arg is a list.
         if (Evaluate.isList(args[0])) {
@@ -98,11 +99,12 @@ public final class CoreFunctionsList {
     /**
      * Returns a list without its first item.
      */
-    public static String rest(String[] args) throws SyntaxException {
+    public static String rest(String[] args)
+            throws SyntaxException, ArityException {
         // The only arg passed to first should be a single list.
         // First check there is one arg.
         if (args.length != 1) {
-            return "Error - wrong number of args passed to clojure.core/rest";
+            throw new ArityException("clojure.core/rest");
         }
         // Check arg is a list.
         if (Evaluate.isList(args[0])) {

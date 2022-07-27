@@ -17,18 +17,14 @@ public final class CoreFunctionsComparator {
      * to true. A single arg expression (< 3) evaluates
      * to true.
      */
-    public static String lt(String[] args) {
-        try {
-            int result = Arrays.stream(args)
-                    .mapToInt(x -> Integer.valueOf(x))
-                    .reduce(Integer.MIN_VALUE, (x, y) -> x < y ? y : Integer.MAX_VALUE);
-            if (result == Integer.MAX_VALUE) {
-                return "false";
-            } else {
-                return "true";
-            }
-        } catch (NumberFormatException e) {
-            return "Error - String cannot be cast to number";
+    public static String lt(String[] args) throws NumberFormatException {
+        int result = Arrays.stream(args)
+                .mapToInt(x -> Integer.valueOf(x))
+                .reduce(Integer.MIN_VALUE, (x, y) -> x < y ? y : Integer.MAX_VALUE);
+        if (result == Integer.MAX_VALUE) {
+            return "false";
+        } else {
+            return "true";
         }
     }
 
@@ -39,18 +35,14 @@ public final class CoreFunctionsComparator {
      * to true. A single arg expression (> 3) evaluates
      * to true.
      */
-    public static String gt(String[] args) {
-        try {
-            int result = Arrays.stream(args)
-                    .mapToInt(x -> Integer.valueOf(x))
-                    .reduce(Integer.MAX_VALUE, (x, y) -> x > y ? y : Integer.MIN_VALUE);
-            if (result == Integer.MIN_VALUE) {
-                return "false";
-            } else {
-                return "true";
-            }
-        } catch (NumberFormatException e) {
-            return "Error - String cannot be cast to number";
+    public static String gt(String[] args) throws NumberFormatException {
+        int result = Arrays.stream(args)
+                .mapToInt(x -> Integer.valueOf(x))
+                .reduce(Integer.MAX_VALUE, (x, y) -> x > y ? y : Integer.MIN_VALUE);
+        if (result == Integer.MIN_VALUE) {
+            return "false";
+        } else {
+            return "true";
         }
     }
 

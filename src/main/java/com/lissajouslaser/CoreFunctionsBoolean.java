@@ -35,9 +35,9 @@ public final class CoreFunctionsBoolean {
     /**
      * Not operator, gives the logical opposite of a value.
      */
-    public static String not(String[] args) {
+    public static String not(String[] args) throws ArityException {
         if (args.length != 1) {
-            return "Error - wrong number of args passed to clojure.core/def";
+            throw new ArityException("clojure.core/not");
         } else {
             return Boolean.toString(isNilOrFalse(args[0]));
         }

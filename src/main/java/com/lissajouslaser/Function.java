@@ -27,9 +27,9 @@ public class Function extends Evaluate {
      * substituted for arguments.
      */
     public String applyFn(ArrayList<String> args, Evaluate global)
-            throws SyntaxException {
+            throws SyntaxException, ArityException {
         if (args.size() != params.size()) {
-            throw new SyntaxException("user/" + name);
+            throw new ArityException("user/" + name);
         }
         setUserDefinedFunctions(global.getUserDefinedFunctions());
 

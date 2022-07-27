@@ -15,8 +15,8 @@ public class Loop {
         scanner = new Scanner(System.in);
     }
 
-    public Loop(Scanner scanner) {
-        evaluate = new Evaluate();
+    public Loop(Evaluate evaluate, Scanner scanner) {
+        this.evaluate = evaluate;
         this.scanner = scanner;
     }
 
@@ -38,7 +38,10 @@ public class Loop {
             }
             try {
                 System.out.println(evaluate.eval(input));
-            } catch (SyntaxException e) {
+            // Most exceptions are caught here becuase we do not
+            // want evaluation to continue when there is an error.
+            } catch (SyntaxException | ArithmeticException
+                    | NumberFormatException | ArityException e) {
                 System.out.println(e);
             }
         }

@@ -3,6 +3,7 @@ package com.lissajouslaser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 // import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -36,11 +37,13 @@ public class CoreFunctionsTest {
     @Test
     public void divByZeroReturnsErrMsg() {
         String[] args = {"3", "0"};
-        assertEquals("Error - Cannot divide by zero", CoreFunctionsArithmetic.div(args));
+        assertThrows(ArithmeticException.class, () -> {
+            CoreFunctionsArithmetic.div(args);
+        });
     }
 
     @Test
-    public void modWorks() throws SyntaxException {
+    public void modWorks() throws SyntaxException, ArityException {
         String[] args = {"38", "5"};
         assertEquals("3", CoreFunctionsArithmetic.mod(args));
     }
@@ -52,7 +55,7 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void firstWorks1() {
+    public void firstWorks1() throws ArityException {
         String[] args = {"(list 3 4 5)"};
         try {
             assertEquals("3", CoreFunctionsList.first(args));
@@ -61,7 +64,7 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void firstWorks2() {
+    public void firstWorks2() throws ArityException {
         String[] args = {"(list 5)"};
         try {
             assertEquals("5", CoreFunctionsList.first(args));
@@ -70,13 +73,13 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void firstWorks3() throws SyntaxException {
+    public void firstWorks3() throws SyntaxException, ArityException {
         String[] args = {"(list)"};
         assertEquals("nil", CoreFunctionsList.first(args));
     }
 
     @Test
-    public void restWorks() {
+    public void restWorks() throws ArityException {
         String[] args = {"(list 3 4 5)"};
         try {
             assertEquals("(list 4 5)", CoreFunctionsList.rest(args));
@@ -85,7 +88,7 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void restWorks2() throws SyntaxException {
+    public void restWorks2() throws SyntaxException, ArityException {
         String[] args = {"(list)"};
         assertEquals("(list)", CoreFunctionsList.rest(args));
     }
@@ -139,7 +142,7 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void consWorks1() {
+    public void consWorks1() throws ArityException {
         String[] args = {"3", "(list 4 5)"};
         try {
             assertEquals("(list 3 4 5)", CoreFunctionsList.cons(args));
@@ -148,7 +151,7 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void consWorks2() {
+    public void consWorks2() throws ArityException {
         String[] args = {"(list 3)", "(list 4 5)"};
         try {
             assertEquals("(list (list 3) 4 5)", CoreFunctionsList.cons(args));
@@ -181,25 +184,25 @@ public class CoreFunctionsTest {
     }
 
     @Test
-    public void notWorks1() throws SyntaxException {
+    public void notWorks1() throws SyntaxException, ArityException {
         String[] args = {"false"};
         assertEquals("true", CoreFunctionsBoolean.not(args));
     }
 
     @Test
-    public void notWorks2() throws SyntaxException {
+    public void notWorks2() throws SyntaxException, ArityException {
         String[] args = {"true"};
         assertEquals("false", CoreFunctionsBoolean.not(args));
     }
 
     @Test
-    public void notWorks3() throws SyntaxException {
+    public void notWorks3() throws SyntaxException, ArityException {
         String[] args = {"nil"};
         assertEquals("true", CoreFunctionsBoolean.not(args));
     }
 
     @Test
-    public void notWorks4() throws SyntaxException {
+    public void notWorks4() throws SyntaxException, ArityException {
         String[] args = {"-200"};
         assertEquals("false", CoreFunctionsBoolean.not(args));
     }

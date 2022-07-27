@@ -17,6 +17,6 @@ public class ArityException extends Exception {
 
     @Override
     public String toString() {
-        return "Arity Exception - wrong number of args passed" + msg;
+        return "Arity Exception\nWrong number of args passed" + msg;
     }
 }
