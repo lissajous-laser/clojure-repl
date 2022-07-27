@@ -46,7 +46,7 @@ public final class CoreFunctionsList {
             ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[1]);
 
             if (!tokensOfList.get(0).equals("list")) {
-                return "Error - illegal argument passed to clojure.core/cons";
+                throw new SyntaxException("Illegal list passed to clojure.core/cons");
             }
             // Create output string with added element.
             StringBuilder returnString = new StringBuilder();
@@ -61,7 +61,7 @@ public final class CoreFunctionsList {
             returnString.append(")");
             return returnString.substring(0);
         }
-        return "Error - illegal argument passed to clojure.core/cons";
+        throw new SyntaxException("Illegal list passed to clojure.core/cons");
     }
 
     /**
@@ -83,16 +83,16 @@ public final class CoreFunctionsList {
                 return "nil";
             }
             if (!tokensOfList.get(0).equals("list")) {
-                return "Error - illegal argument passed to clojure.core/first - ONE";
+                throw new SyntaxException("Illegal list passed to "
+                        + "clojure.core/first");
             // For empty list (list)
             } else if (tokensOfList.size() == 1) {
                 return "nil";
             } else {
                 return tokensOfList.get(1);
             }
-        } else  {
-            return "Error - Illegal argument passed to clojure.core/first - TWO";
         }
+        throw new SyntaxException("Illegal list passed to clojure.core/first");
     }
 
     /**
@@ -109,7 +109,8 @@ public final class CoreFunctionsList {
             ArrayList<String> tokensOfList = Evaluate.tokeniseList(args[0]);
 
             if (!tokensOfList.get(0).equals("list")) {
-                return "Error - illegal argument passed to clojure.core/rest";
+                throw new SyntaxException("Illegal list passed to "
+                        + "clojure.core/rest");
             // For empty list (list) or list with one element.
             } else if (tokensOfList.size() == 1 || tokensOfList.size() == 2) {
                 return "(list)";
@@ -128,6 +129,6 @@ public final class CoreFunctionsList {
                 return returnString.substring(0);
             }
         }
-        return "Error - Illegal argument passed to clojure.core/rest";
+        throw new SyntaxException("Illegal list passed to clojure.core/rest");
     }
 }

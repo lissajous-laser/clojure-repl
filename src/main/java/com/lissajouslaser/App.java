@@ -14,5 +14,12 @@ public final class App {
     public static void main(String[] args) throws SyntaxException {
         Loop repl = new Loop();
         repl.start();
+
+        // try {
+        //     throw new ArithmeticException("a problem");
+        // } catch (Exception e) {
+        //     System.out.println(e);
+        // }
+
     }
 }

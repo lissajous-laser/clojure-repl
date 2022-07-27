@@ -1,17 +1,17 @@
 package com.lissajouslaser;
 
 /**
- * Exception for errors caused by passing the wrong number of
- * arguemnts to a function.
+ * Class for exceptions caused by using a symbol not
+ * previously defined.
  */
-public class ArityException extends Exception {
+public class UnresolvedSymbolException extends Exception {
     private String msg;
 
-    public ArityException() {
+    public UnresolvedSymbolException() {
         this.msg = "";
     }
 
-    public ArityException(String msg) {
+    public UnresolvedSymbolException(String msg) {
         this.msg =  " to: " + msg;
     }
 

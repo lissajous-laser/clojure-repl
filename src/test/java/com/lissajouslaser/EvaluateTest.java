@@ -252,7 +252,7 @@ public class EvaluateTest {
             throws SyntaxException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a 10)");
-        evaluate.eval("(defn num-identity [a] (* 1 a))");
+        evaluate.eval("(defn num-identity (a) (* 1 a))");
         evaluate.eval("(num-identity 20)");
         assertEquals("10", evaluate.eval("a"));
     }

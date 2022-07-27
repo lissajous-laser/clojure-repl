@@ -14,7 +14,8 @@ import java.util.Map;
  *   needs to be writtern as (list).
  * - Lists are the only supported data structe. this
  *   also means function parameters are in a list
- *   instead of a vector.
+ *   instead of a vector, which is more similar to
+ *   Common Lisp.
  * - Consing a value onto nil has not been implmented.
  * - Functions and defined values are not in the same
  *   namespace - Lisp-2 rather than a Lisp-1
@@ -90,7 +91,7 @@ public class Evaluate {
 
                 // Incorrect syntax.
                 if (closeParens > openParens) {
-                    throw new SyntaxException();
+                    throw new SyntaxException("Unmatched parentheses.");
                 }
 
                 switch (i) {
@@ -154,7 +155,7 @@ public class Evaluate {
         if (openParens == closeParens) {
             return tokens;
         } else {
-            throw new SyntaxException();
+            throw new SyntaxException("Unmatched parentheses.");
         }
     }
 
@@ -271,25 +272,25 @@ public class Evaluate {
                     }
                     return dispatcher(tokensWithEvaluatedArgs);
             }
-        }
-        if (isNumber(expr) || isBool(expr)) {
+        } else if (isNumber(expr) || isBool(expr)) {
             return expr;
         } else if (isValidSymbol(expr)) {
             String value = definedValues.get(expr);
-            if (value == null) {
-                return "Error - Unable to resolve symbol";
-            } else {
+            if (value != null) {
                 return value;
+            } else {
+                throw new SyntaxException("Unable to resolve symbol: " + expr
+                        + " in this context.");
             }
         } else {
-            throw new SyntaxException();
+            throw new SyntaxException("Unsupported input.");
         }
     }
 
     /**
      * Allows you to define values.
      */
-    public String def(ArrayList<String> tokens) {
+    public String def(ArrayList<String> tokens) throws SyntaxException {
         final int numOfArgs = 2;
 
         if (tokens.size() != numOfArgs + 1) {
@@ -299,7 +300,7 @@ public class Evaluate {
             definedValues.put(tokens.get(1), tokens.get(2));
             return "user/" + tokens.get(2);
         }
-        return "Error - Illegal argument passed to clojure.core/def";
+        throw new SyntaxException("Illegal name passed to clojure.core/def");
     }
 
     /**
@@ -346,8 +347,14 @@ public class Evaluate {
         if (tokens.size() != listSize) {
             return "Error - wrong nmber of args passed to clojure.core/defn";
         }
-        if (!isValidSymbol(fnName) || !isList(params)) {
-            return "Some failure";
+        if (!isValidSymbol(fnName)) {
+            throw new SyntaxException("Illegal name passed to "
+                    + "clojure.core/defn");
+        }
+        // Check params is list or vector.
+        if (!isList(params)) {
+            throw new SyntaxException("Illegal parameter passed to "
+                    + "clojure.core/defn");
         }
         String validExprTest = isValidExpr(body, fnName);
         if ("true".equals(validExprTest)) {
@@ -356,7 +363,9 @@ public class Evaluate {
 
             return "user/" + fnName;
         } else {
-            return "Some failure";
+            // Not sure this is practially reachable.
+            throw new SyntaxException("Illegal body passed to "
+                    + "clojure.core/defn");
         }
     }
 
@@ -387,21 +396,22 @@ public class Evaluate {
                 for (int i = 1; i < tokens.size(); i++) {
                     isValidExprResults.add(isValidExpr(tokens.get(i), fnName));
                 }
-                // Convert to array.
                 // TODO - may need to change all Arrays to ArrayList
-                String[] isValidExprResultsArr = new String[isValidExprResults.size()];
+                String[] isValidExprResultsArr = new
+                        String[isValidExprResults.size()];
                 for (int i = 0; i < isValidExprResults.size(); i++) {
                     isValidExprResultsArr[i] = isValidExprResults.get(i);
                 }
                 return CoreFunctionsBoolean
                         .and(isValidExprResultsArr);
             } else {
-                return "false";
+                throw new SyntaxException("Unable to resolve " + expr
+                        + " in this context.");
             }
         } else if (isNumber(expr) || isBool(expr) || isValidSymbol(expr)) {
             return "true";
         } else {
-            return "false";
+            throw new SyntaxException("Unsupported input.");
         }
     }
 
@@ -414,7 +424,8 @@ public class Evaluate {
         String fnName = tokens.get(0);
         Function fn = userDefinedFunctions.get(fnName);
         if (fn == null) {
-            return "Unable to resolve: " + fnName + " in this context";
+            throw new SyntaxException("Unable to resolve: " + fnName
+                    + " in this context");
         } else {
             ArrayList<String> args = new
                     ArrayList<>(tokens.subList(1, tokens.size()));
