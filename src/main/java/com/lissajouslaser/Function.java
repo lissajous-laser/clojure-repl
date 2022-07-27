@@ -42,8 +42,6 @@ public class Function extends Evaluate {
         }
         // Add parameter-argument bindings.
         for (int i = 0; i < params.size(); i++) {
-            System.out.print("At Function:45: "); ///
-            System.out.println(params.get(i) + " " + args.get(i)); ///
             definedValuesInScope.put(params.get(i), args.get(i));
         }
         return  eval(body);

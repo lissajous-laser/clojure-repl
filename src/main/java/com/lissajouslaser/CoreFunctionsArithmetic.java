@@ -48,10 +48,6 @@ public final class CoreFunctionsArithmetic {
      * Multiply args.
      */
     public static String mul(String[] args) {
-        System.out.println("Just before multiplying, CoreFunctionsArithmetic:51"); ///
-        for (String str: args) { ///
-            System.out.println("arg: " + str); ///
-        } ///
         try {
             int product = Arrays.stream(args)
                     .mapToInt(x -> Integer.valueOf(x))
@@ -81,6 +77,21 @@ public final class CoreFunctionsArithmetic {
             return "Error - String cannot be cast to number";
         } catch (ArithmeticException e) {
             return "Error - Cannot divide by zero";
+        }
+    }
+
+    /**
+     * Calculates modulus of two numbers.
+     */
+    public static String mod(String[] args) {
+        if (args.length != 2) {
+            return "Error - Wrong number of args passed to clojure.core/mod";
+        }
+        try {
+            int modulus = Integer.valueOf(args[0]) % Integer.valueOf(args[1]);
+            return String.valueOf(modulus);
+        } catch (NumberFormatException e) {
+            return "Error - String cannot be cast to number";
         }
     }
 }

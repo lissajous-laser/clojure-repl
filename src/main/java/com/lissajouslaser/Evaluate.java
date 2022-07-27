@@ -9,18 +9,19 @@ import java.util.List;
 import java.util.Map;
 
 /*
-* Limitations:
-* - No reader macro for non-evaluating lists, eg '()
-*   needs to be writtern as (list).
-* - Lists are the only supported data structe. this
-*   also means function parameters are in a list
-*   instead of a vector.
-* - Consing a value onto nil has not been implmented.
-* - Functions and defined values are not in the same
-    namespace - Lisp-2 rather than a Lisp-1
-* - Does not support anonymous functions.
-* - No support for functions with multiple expressions.
-*/
+ * Limitations:
+ * - No reader macro for non-evaluating lists, eg '()
+ *   needs to be writtern as (list).
+ * - Lists are the only supported data structe. this
+ *   also means function parameters are in a list
+ *   instead of a vector.
+ * - Consing a value onto nil has not been implmented.
+ * - Functions and defined values are not in the same
+ *   namespace - Lisp-2 rather than a Lisp-1
+ * - Does not support anonymous functions.
+ * - No support for higher order functions.
+ * - No support for partial function application
+ */
 
 /**
  * Evalutes inputted Clojure code.
@@ -28,7 +29,9 @@ import java.util.Map;
 public class Evaluate {
     private Map<String, String> definedValues;
     private Map<String, Function> userDefinedFunctions;
-    private List<String> coreFunctions; // for validating user defined functions
+    // To check that all user defined functions call
+    // functions that already exist.
+    private List<String> coreFunctions;
 
     /**
      * Class constructor.
@@ -36,9 +39,9 @@ public class Evaluate {
     public Evaluate() {
         definedValues = new HashMap<>();
         userDefinedFunctions = new HashMap<>();
-        String[] coreFunctionsArr = {"+", "-", "/", "*", "list", "cons",
-                                     "first", "rest", "<", ">", "=", "and",
-                                     "or", "not", "def", "if", "fn"};
+        String[] coreFunctionsArr = {"+", "-", "/", "*", "mod", "list",
+                                     "cons", "first", "rest", "<", ">", "=",
+                                     "and", "or", "not", "def", "if", "fn"};
         coreFunctions = new ArrayList<>(Arrays.asList(coreFunctionsArr));
     }
 
@@ -63,10 +66,8 @@ public class Evaluate {
     }
 
     /**
-     * If input is a list it will take apart
+     * If input is a list it will take apart and
      * function and arguments and put into an array.
-     * Throws SyntaxException if there is a syntax
-     * error.
      */
     static ArrayList<String> tokeniseList(String expr) throws SyntaxException {
         ArrayList<String> tokens = new ArrayList<>();
@@ -183,7 +184,7 @@ public class Evaluate {
      * Clojure.
      */
     static boolean isBool(String expr) {
-        return expr.trim().matches("(true)|(false)|(nil)");
+        return expr.trim().matches("true|false|nil");
     }
 
     /**
@@ -211,6 +212,8 @@ public class Evaluate {
                 return CoreFunctionsArithmetic.div(args);
             case "*":
                 return CoreFunctionsArithmetic.mul(args);
+            case "mod":
+                return CoreFunctionsArithmetic.mod(args);
             case "list":
                 return CoreFunctionsList.list(args);
             case "cons":
@@ -241,7 +244,6 @@ public class Evaluate {
      * of nesteed expressions.
      */
     public String eval(String expr) throws SyntaxException {
-
         if (isList(expr)) {
             ArrayList<String> tokens = tokeniseList(expr);
 
@@ -265,8 +267,6 @@ public class Evaluate {
                     tokensWithEvaluatedArgs.add(tokens.get(0));
 
                     for (int i = 1; i < tokens.size(); i++) {
-                        System.out.print("At Evaluate:268: "); ///
-                        System.out.println(tokens.get(i)); ///
                         tokensWithEvaluatedArgs.add(eval(tokens.get(i)));
                     }
                     return dispatcher(tokensWithEvaluatedArgs);
@@ -276,8 +276,6 @@ public class Evaluate {
             return expr;
         } else if (isValidSymbol(expr)) {
             String value = definedValues.get(expr);
-            System.out.print("At evaluate:279: ");
-            System.out.println("symbol resolves to: " + value);
             if (value == null) {
                 return "Error - Unable to resolve symbol";
             } else {

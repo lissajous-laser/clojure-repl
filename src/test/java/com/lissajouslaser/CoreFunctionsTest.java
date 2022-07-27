@@ -40,6 +40,12 @@ public class CoreFunctionsTest {
     }
 
     @Test
+    public void modWorks() throws SyntaxException {
+        String[] args = {"38", "5"};
+        assertEquals("3", CoreFunctionsArithmetic.mod(args));
+    }
+
+    @Test
     public void listWorks() {
         String[] tokens = {"3", "4", "5"};
         assertEquals("(list 3 4 5)", CoreFunctionsList.list(tokens));
@@ -197,5 +203,4 @@ public class CoreFunctionsTest {
         String[] args = {"-200"};
         assertEquals("false", CoreFunctionsBoolean.not(args));
     }
-
 }

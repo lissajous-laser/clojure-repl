@@ -174,14 +174,14 @@ public class EvaluateTest {
     }
 
     @Test
-    public void userDefinedFnIsUsed1() throws SyntaxException {
+    public void userDefinedFnWorks1() throws SyntaxException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn increment (n) (+ n 1))");
         assertEquals("4", evaluate.eval("(increment 3)"));
     }
 
     @Test
-    public void userDefinedFnIsUsed2() throws SyntaxException {
+    public void userDefinedFnWorks2() throws SyntaxException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn product-1st-2-list-items (l)"
                 + " (* (first l) (first (rest l))))");
@@ -189,11 +189,94 @@ public class EvaluateTest {
     }
 
     @Test
-    public void userDefinedFnIsUsed3() throws SyntaxException {
+    public void userDefinedFnWorks3() throws SyntaxException {
         Evaluate evaluate = new Evaluate();
-        evaluate.eval("(defn factorial (n) (if (= n 1) 1 (* n (factorial (- n 1)))))");
-        assertEquals("6", evaluate.eval("(factorial 3)"));
+        evaluate.eval("(defn xor (x y) "
+                + "(and (or x y) (or (not x) (not y))))");
+        assertEquals("true", evaluate.eval("(xor true false)"));
     }
 
+    // Test recursive function factorial.
+    @Test
+    public void userDefinedFnWorksRecursive1() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn factorial (n) "
+                + "(if (= n 1) "
+                + "1 "
+                + "(* n (factorial (- n 1)))))");
+        assertEquals("24", evaluate.eval("(factorial 4)"));
+    }
 
+    // Test recursive function sum, giving sum of all numbers
+    // in a list.
+    @Test
+    public void userDefinedFnWorksRecursive2() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn sum (l) "
+                + "(if (= (first l) nil) "
+                + "0 "
+                + "(+ (first l) (sum (rest l)))))");
+        assertEquals("10", evaluate.eval("(sum (list 1 2 3 4))"));
+    }
+
+    // Test recursive function Euclid's gcd algorithm.
+    @Test
+    public void userDefinedFnWorksRecursive3() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn gcd (a b) "
+                + "(if (= b 0) "
+                + "a "
+                + "(gcd b (mod a b))))");
+        assertEquals("3", evaluate.eval("(gcd 24 9)"));
+    }
+
+    // Three functions used to calculate the average of a list
+    // of numbers.
+    @Test
+    public void threeUserDefinedFnsWork() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn sum (l) "
+                + "(if (= (first l) nil) "
+                + "0 "
+                + "(+ (first l) (sum (rest l)))))");
+        evaluate.eval("(defn count (l) "
+                + "(if (= (first l) nil) "
+                + "0 "
+                + "(+ 1 (count (rest l)))))");
+        evaluate.eval("(defn ave (l) (/ (sum l) (count l)))");
+        assertEquals("3", evaluate.eval("(ave (list 1 2 3 4 5))"));
+    }
+
+    @Test
+    public void functionBindingsGoOutOfScopeAfterFunctionHasReturned()
+            throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a 10)");
+        evaluate.eval("(defn num-identity [a] (* 1 a))");
+        evaluate.eval("(num-identity 20)");
+        assertEquals("10", evaluate.eval("a"));
+    }
+
+    @Test
+    public void showUserDefinedFnsAndValuesExistInDifferentNamespaces()
+            throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a 10)");
+        evaluate.eval("(defn a (a) (* a a))");
+        assertEquals("100", evaluate.eval("(a a)"));
+    }
+
+    @Test
+    public void zeroArgumentFnWorks() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn returnZero () 0)");
+        assertEquals("0", evaluate.eval("(returnZero)"));
+    }
+
+    @Test
+    public void showCoreFunctionsAreNotOverridden() throws SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn not (x) nil)");
+        assertEquals("true", evaluate.eval("(not false)"));
+    }
 }
