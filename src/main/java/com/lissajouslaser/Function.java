@@ -1,7 +1,5 @@
 package com.lissajouslaser;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,13 +7,13 @@ import java.util.Map;
  */
 public class Function extends Evaluate {
     private String name;
-    private List<String> params;
+    private TokensList params;
     private String body;
 
     /**
      * Class constructor.
      */
-    public Function(String name, ArrayList<String> params, String body) {
+    public Function(String name, TokensList params, String body) {
         super();
         this.name = name;
         this.params = params;
@@ -23,27 +21,28 @@ public class Function extends Evaluate {
     }
 
     /**
-     * Returns function expression with all the parameters
-     * substituted for arguments.
+     * Subtitutes the parameters in function body for the
+     * arguments, then evaluates.
      */
-    public String applyFn(ArrayList<String> args, Evaluate global)
-            throws SyntaxException, ArityException {
-        if (args.size() != params.size()) {
+    public TokensListOrToken applyFn(
+            TokensList tokens,
+            Map<Token, TokensListOrToken> globalDefinedValues,
+            Map<String, Function> globalUserDefinedFunctions
+    ) throws SyntaxException, ArityException, ClassCastException {
+
+        // Make sure number of args and params are equal.
+        if (tokens.size() - 1 != params.size()) {
             throw new ArityException("user/" + name);
         }
-        setUserDefinedFunctions(global.getUserDefinedFunctions());
+        setUserDefinedFunctions(globalUserDefinedFunctions);
+        getDefinedValues().putAll(globalDefinedValues);
 
-        Map<String, String> globalDefinedValues = global.getDefinedValues();
-        Map<String, String> definedValuesInScope = this.getDefinedValues();
-
-        // Deep copy the global definedValues.
-        for (String sym: globalDefinedValues.keySet()) {
-            definedValuesInScope.put(sym, globalDefinedValues.get(sym));
-        }
         // Add parameter-argument bindings.
         for (int i = 0; i < params.size(); i++) {
-            definedValuesInScope.put(params.get(i), args.get(i));
+            Token param = (Token) params.get(i);
+            TokensListOrToken arg = tokens.get(i + 1);
+            getDefinedValues().put(param, arg);
         }
-        return  eval(body);
+        return eval(body);
     }
 }

@@ -38,10 +38,11 @@ public class Loop {
             }
             try {
                 System.out.println(evaluate.eval(input));
-            // Most exceptions are caught here becuase we do not
-            // want evaluation to continue when there is an error.
+                // Most exceptions are caught here becuase we do not
+                // want evaluation to continue when there is an error.
             } catch (SyntaxException | ArithmeticException
-                    | NumberFormatException | ArityException e) {
+                    | NumberFormatException | ArityException
+                    | ClassCastException e) {
                 System.out.println(e);
             }
         }

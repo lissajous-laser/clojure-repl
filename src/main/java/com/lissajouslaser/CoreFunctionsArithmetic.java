@@ -1,77 +1,109 @@
 package com.lissajouslaser;
 
-import java.util.Arrays;
-
 /**
  * Utility class which defines basic arithmetic functions
  * in the langauge.
  */
 public final class CoreFunctionsArithmetic {
 
-    private CoreFunctionsArithmetic() {}
+    private CoreFunctionsArithmetic() {
+    }
 
     /**
      * Add arguments.
      */
-    public static String add(String[] args) throws NumberFormatException {
-        int sum = Arrays.stream(args)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(0, (x, y) -> x + y);
-        return String.valueOf(sum);
+    public static Token add(TokensList tokens)
+            throws NumberFormatException, ArityException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/+");
+        }
+        int sum = 0;
+
+        for (int i = 1; i < tokens.size(); i++) {
+            sum += Integer.valueOf(((Token) tokens.get(i)).toString());
+        }
+        return new Token(String.valueOf(sum));
     }
 
     /**
      * Subtract from first arg the rest of the args.
      */
-    public static String sub(String[] args) throws NumberFormatException {
-        int initial = Integer.valueOf(args[0]);
+    public static Token sub(TokensList tokens)
+            throws NumberFormatException, ArityException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/-");
+        }
+        int subtraction;
+        int initial = Integer.valueOf(((Token) tokens.get(1)).toString());
+        // If there is a single number argument n, the function
+        // evaluates 0 - n.
+        if (tokens.size() == 2) {
+            subtraction = -initial;
+        } else {
+            subtraction = initial;
 
-        // The args that will be subtracted from the
-        // initial value.
-        String[] subtractors = Arrays.copyOfRange(args, 1, args.length);
+            for (int i = 2; i < tokens.size(); i++) {
+                subtraction -= Integer.valueOf(((Token) tokens.get(i)).toString());
+            }
+        }
+        return new Token(String.valueOf(subtraction));
 
-        int subtraction = Arrays.stream(subtractors)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(initial, (x, y) -> x - y);
-        return String.valueOf(subtraction);
     }
 
     /**
      * Multiply args.
      */
-    public static String mul(String[] args) throws NumberFormatException {
-        int product = Arrays.stream(args)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(1, (x, y) -> x * y);
-        return String.valueOf(product);
+    public static Token mul(TokensList tokens)
+            throws NumberFormatException, ArityException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/*");
+        }
+        int product = 1;
+
+        for (int i = 1; i < tokens.size(); i++) {
+            product *= Integer.valueOf(((Token) tokens.get(i)).toString());
+        }
+        return new Token(String.valueOf(product));
     }
 
     /**
      * Divide from first arg the rest of the args.
      */
-    public static String div(String[] args)
-            throws ArithmeticException, NumberFormatException {
-        int initial = Integer.valueOf(args[0]);
+    public static Token div(TokensList tokens)
+            throws ArithmeticException, NumberFormatException, ArityException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core//");
+        }
+        int division;
+        int initial = Integer.valueOf(((Token) tokens.get(1)).toString());
+        // If there is a single number argument n, the function
+        // evaluates 1 / n.
+        if (tokens.size() == 2) {
+            division = 1 / initial;
+        } else {
+            division = initial;
 
-        // The args that will be subtracted from the
-        // initial value.
-        String[] divisors = Arrays.copyOfRange(args, 1, args.length);
-
-        int division = Arrays.stream(divisors)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(initial, (x, y) -> x / y);
-        return String.valueOf(division);
+            for (int i = 2; i < tokens.size(); i++) {
+                division /= Integer.valueOf(((Token) tokens.get(i)).toString());
+            }
+        }
+        return new Token(String.valueOf(division));
     }
 
     /**
      * Calculates modulus of two numbers.
      */
-    public static String mod(String[] args)
+    public static Token mod(TokensList tokens)
             throws ArithmeticException, NumberFormatException, ArityException {
-        if (args.length != 2) {
+
+        final int validSize = 3;
+
+        if (tokens.size() != validSize) {
             throw new ArityException("clojure.core/mod");
         }
-        int modulus = Integer.valueOf(args[0]) % Integer.valueOf(args[1]);
-        return String.valueOf(modulus);
+        int modDividend = Integer.valueOf(((Token) tokens.get(1)).toString());
+        int modDivisor = Integer.valueOf(((Token) tokens.get(2)).toString());
+        int modulus = modDividend % modDivisor;
+        return new Token(String.valueOf(modulus));
     }
 }

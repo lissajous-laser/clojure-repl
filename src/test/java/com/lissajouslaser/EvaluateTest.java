@@ -1,7 +1,5 @@
 package com.lissajouslaser;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,90 +13,79 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EvaluateTest {
 
     @Test
-    public void tokeniseWorks1() {
-        // String[] tokens = {"+", "2", "3"};
-        ArrayList<String> tokens = new ArrayList<>();
-        tokens.add("+");
-        tokens.add("2");
-        tokens.add("3");
-        // Use deepEquals() for functional equality
-        try {
-            assertTrue(Evaluate.tokeniseList("(+ 2 3)").equals(tokens));
-        } catch (SyntaxException e) {
-        }
+    public void tokeniseWorks1() throws SyntaxException {
+        TokensList tokens = new TokensList();
+        tokens.add(new Token("+"));
+        tokens.add(new Token("2"));
+        tokens.add(new Token("3"));
+        assertTrue(Evaluate.tokeniseList("(+ 2 3)").equals(tokens));
     }
 
     @Test
     public void tokeniseThrowsExceptionWhenGivenSyntaxError() {
         assertThrows(SyntaxException.class,
                 () -> {
-                    Evaluate.tokeniseList(")))");
+                    Evaluate.tokeniseList("))");
                 });
     }
-
-    // @Test
-    // public void tokeniseWorks3() {
-    //     Evaluate eval = new Evaluate();
-    //     String[] tokens = {"x"};
-    //     assertTrue(Arrays.deepEquals(eval.tokenise("x"), tokens));
-    // }
 
     @Test
     public void dispatcherToListWorks() throws SyntaxException, ArityException {
         Evaluate eval = new Evaluate();
         String[] tokensArr = {"list", "3", "4", "5"};
-        ArrayList<String> tokens = new ArrayList<>(Arrays.asList(tokensArr));
-        assertEquals("(list 3 4 5)", eval.dispatcher(tokens));
+        TokensList tokens = new TokensList(tokensArr);
+        assertEquals("(list 3 4 5)", eval.dispatcher(tokens).toString());
     }
 
     @Test
     public void evalWorks1() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("5", evaluate.eval("(+ 2 3)"));
+        assertEquals("5", evaluate.eval(new Token("(+ 2 3)")).toString());
     }
 
     @Test
     public void evalWorks2() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         assertEquals("(list 3 4 5)",
-                evaluate.eval("(cons (+ 1 2) (list 4 5))"));
+                evaluate.eval(new Token("(cons (+ 1 2) (list 4 5))")).toString());
     }
 
     @Test
     public void evalWorks3() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("45", evaluate.eval("(* 9 (+ 2 3))"));
+        assertEquals("45", evaluate.eval("(* 9 (+ 2 3))").toString());
     }
 
     @Test
     public void evalWorks4() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("31", evaluate.eval("(first (rest (list 30 31 32)))"));
+        assertEquals("31",
+                evaluate.eval("(first (rest (list 30 31 32)))").toString());
     }
 
     @Test
     public void evalWorks5() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("true", evaluate.eval("(< (/ 10 3) 4)"));
+        assertEquals("true", evaluate.eval("(< (/ 10 3) 4)").toString());
     }
 
     @Test
     public void evalWorks6() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("true", evaluate.eval("(and (> 5 -3) (< 6 9))"));
+        assertEquals("true", evaluate.eval("(and (> 5 -3) (< 6 9))").toString());
     }
 
     @Test
     public void evalWorks7() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         assertEquals("(list -3 -4 -5)",
-                evaluate.eval("(cons -3 (cons -4 (list -5)))"));
+                evaluate.eval("(cons -3 (cons -4 (list -5)))").toString());
     }
 
     @Test
     public void evalWorks8() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("(list -3)", evaluate.eval("(cons -3 (list))"));
+        assertEquals("(list -3)", evaluate.eval("(cons -3 (list))").toString());
     }
 
     @Test
@@ -122,10 +109,12 @@ public class EvaluateTest {
     }
 
     @Test
-    public void defWorks1() throws SyntaxException, ArityException {
+    public void defCreatesEntryInDefinedValues()
+            throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a 45)");
-        assertEquals("45", evaluate.getDefinedValues().get("a"));
+        Token valueOfA = (Token) evaluate.getDefinedValues().get(new Token("a"));
+        assertEquals("45", valueOfA.toString());
     }
 
     @Test
@@ -133,7 +122,7 @@ public class EvaluateTest {
             throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a -3)");
-        assertEquals("-10", evaluate.eval("(/ 30 a)"));
+        assertEquals("-10", evaluate.eval("(/ 30 a)").toString());
     }
 
     @Test
@@ -141,31 +130,31 @@ public class EvaluateTest {
             throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a false)");
-        assertEquals("false", evaluate.eval("(and 10 true a)"));
+        assertEquals("false", evaluate.eval("(and 10 true a)").toString());
     }
 
     @Test
     public void ifWorks1() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("4", evaluate.eval("(if (= 3 3) 4 5)"));
+        assertEquals("4", evaluate.eval("(if (= 3 3) 4 5)").toString());
     }
 
     @Test
     public void ifWorks2() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("4", evaluate.eval("(if (first (list 3)) 4 5)"));
+        assertEquals("4", evaluate.eval("(if (first (list 3)) 4 5)").toString());
     }
 
     @Test
     public void ifWorks3() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("5", evaluate.eval("(if (first (list)) 4 5)"));
+        assertEquals("5", evaluate.eval("(if (first (list)) 4 5)").toString());
     }
 
     @Test
     public void ifWorks4() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
-        assertEquals("nil", evaluate.eval("(if false 4)"));
+        assertEquals("nil", evaluate.eval("(if false 4)").toString());
     }
 
     @Test
@@ -179,7 +168,7 @@ public class EvaluateTest {
     public void userDefinedFnWorks1() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn increment (n) (+ n 1))");
-        assertEquals("4", evaluate.eval("(increment 3)"));
+        assertEquals("4", evaluate.eval("(increment 3)").toString());
     }
 
     @Test
@@ -187,7 +176,10 @@ public class EvaluateTest {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn product-1st-2-list-items (l)"
                 + " (* (first l) (first (rest l))))");
-        assertEquals("42", evaluate.eval("(product-1st-2-list-items (list 6 7))"));
+        assertEquals(
+                "42",
+                evaluate.eval("(product-1st-2-list-items (list 6 7))").toString()
+        );
     }
 
     @Test
@@ -195,7 +187,7 @@ public class EvaluateTest {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn xor (x y) "
                 + "(and (or x y) (or (not x) (not y))))");
-        assertEquals("true", evaluate.eval("(xor true false)"));
+        assertEquals("true", evaluate.eval("(xor true false)").toString());
     }
 
     // Test recursive function factorial.
@@ -206,7 +198,7 @@ public class EvaluateTest {
                 + "(if (= n 1) "
                 + "1 "
                 + "(* n (factorial (- n 1)))))");
-        assertEquals("24", evaluate.eval("(factorial 4)"));
+        assertEquals("24", evaluate.eval("(factorial 4)").toString());
     }
 
     // Test recursive function sum, giving sum of all numbers
@@ -218,7 +210,7 @@ public class EvaluateTest {
                 + "(if (= (first l) nil) "
                 + "0 "
                 + "(+ (first l) (sum (rest l)))))");
-        assertEquals("10", evaluate.eval("(sum (list 1 2 3 4))"));
+        assertEquals("10", evaluate.eval("(sum (list 1 2 3 4))").toString());
     }
 
     // Test recursive function Euclid's gcd algorithm.
@@ -229,7 +221,7 @@ public class EvaluateTest {
                 + "(if (= b 0) "
                 + "a "
                 + "(gcd b (mod a b))))");
-        assertEquals("3", evaluate.eval("(gcd 24 9)"));
+        assertEquals("3", evaluate.eval("(gcd 24 9)").toString());
     }
 
     // Three functions used to calculate the average of a list
@@ -246,7 +238,7 @@ public class EvaluateTest {
                 + "0 "
                 + "(+ 1 (count (rest l)))))");
         evaluate.eval("(defn ave (l) (/ (sum l) (count l)))");
-        assertEquals("3", evaluate.eval("(ave (list 1 2 3 4 5))"));
+        assertEquals("3", evaluate.eval("(ave (list 1 2 3 4 5))").toString());
     }
 
     @Test
@@ -256,7 +248,7 @@ public class EvaluateTest {
         evaluate.eval("(def a 10)");
         evaluate.eval("(defn num-identity (a) (* 1 a))");
         evaluate.eval("(num-identity 20)");
-        assertEquals("10", evaluate.eval("a"));
+        assertEquals("10", evaluate.eval("a").toString());
     }
 
     @Test
@@ -265,14 +257,14 @@ public class EvaluateTest {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(def a 10)");
         evaluate.eval("(defn a (a) (* a a))");
-        assertEquals("100", evaluate.eval("(a a)"));
+        assertEquals("100", evaluate.eval("(a a)").toString());
     }
 
     @Test
     public void zeroArgumentFnWorks() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn returnZero () 0)");
-        assertEquals("0", evaluate.eval("(returnZero)"));
+        assertEquals("0", evaluate.eval("(returnZero)").toString());
     }
 
     @Test
@@ -280,7 +272,81 @@ public class EvaluateTest {
             throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn not (x) nil)");
-        assertEquals("true", evaluate.eval("(not false)"));
+        assertEquals("true", evaluate.eval("(not false)").toString());
+    }
+
+    @Test
+    public void twoFunctionsCallingEachOtherWorks()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        // Declare a dummy add3() first so that input validation
+        // for double() passes.
+        evaluate.eval("(defn add3 () 3)");
+        evaluate.eval("(defn double (x) (add3 (* x 2)))");
+        evaluate.eval("(defn add3 (x) (if (> x 100) x (double (+ x 3))))");
+        assertEquals("122", evaluate.eval("(double 5)").toString());
+    } // 5 10 13 26 29 58 61 122
+
+    @Test
+    public void callingFirstWithANestedListReturnsAList()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        assertEquals(
+            "(list 1 2)",
+            evaluate.eval("(first (list (list 1 2) (list 3 4)))").toString()
+        );
+    }
+
+    @Test
+    public void listsCanBeDefined()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a-list (list 1 2 3))");
+        assertEquals("(list 1 2 3)", evaluate.eval("a-list").toString());
+    }
+
+    @Test
+    public void consingADefinedListDoesNotChangeTheDefinedList()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a-list (list 1 2 3))");
+        evaluate.eval("(cons 0 a-list)");
+        assertEquals("(list 1 2 3)", evaluate.eval("a-list").toString());
+    }
+
+    @Test
+    public void callingRestWithADefinedListDoesNotChangeTheDefinedList()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a-list (list 1 2 3))");
+        evaluate.eval("(rest a-list)");
+        assertEquals("(list 1 2 3)", evaluate.eval("a-list").toString());
+    }
+
+    @Test void changingAListAccessedFromADefinedListDoesNotChangeTheDefinedList()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def a-list (list (list 1) 2 3))");
+        evaluate.eval("(cons 0 (first a-list))");
+        assertEquals("(list (list 1) 2 3)", evaluate.eval("a-list").toString());
+    }
+
+    @Test
+    public void definingAListUsingADefinedListWorks()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def list1 (list 1 2 3))");
+        evaluate.eval("(def list2 (cons 0 list1))");
+        assertEquals("(list 0 1 2 3)", evaluate.eval("list2").toString());
+    }
+
+    @Test
+    public void equalsIsDeeplyEqual()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(def list1 (list 3 4 5 (list 5 6) (list 7 (list 8))))");
+        evaluate.eval("(def list2 (list 3 4 5 (list 5 6) (list 7 (list 8))))");
+        assertEquals("true", evaluate.eval("(= list1 list2)").toString());
     }
 
     @Test
@@ -300,10 +366,28 @@ public class EvaluateTest {
     }
 
     @Test
-    public void passingFourArgsToDefnThrowsException() {
+    public void havingFunctionParametersAsANestedListThrowsException() {
+        Evaluate evaluate = new Evaluate();
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(defn square ((first (list a))) (* a a))");
+        });
+    }
+
+    @Test
+    public void havingTwoBodiesInDefnThrowsException() {
         Evaluate evaluate = new Evaluate();
         assertThrows(ArityException.class, () -> {
-            evaluate.eval("(defn square [a] (* a a) (* a a))");
+            evaluate.eval("(defn square (a) (* a a) (* a a))");
+        });
+    }
+
+    @Test
+    public void passingTooManyArgsToAUserDefinedFunctionThrowsException()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate();
+        evaluate.eval("(defn square (a) (* a a))");
+        assertThrows(ArityException.class, () -> {
+            evaluate.eval("(square 6 7)");
         });
     }
 
@@ -319,7 +403,7 @@ public class EvaluateTest {
     public void namingValueWithBooleanThrowsException() {
         Evaluate evaluate = new Evaluate();
         assertThrows(SyntaxException.class, () -> {
-            evaluate.eval("(def true true)");
+            evaluate.eval("(def true false)");
         });
     }
 

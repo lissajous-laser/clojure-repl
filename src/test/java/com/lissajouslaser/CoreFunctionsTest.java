@@ -10,263 +10,381 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
  */
 public class CoreFunctionsTest {
     @Test
-    public void addWorks1() {
-        String[] args = {"3", "4", "5"};
-        assertEquals("12", CoreFunctionsArithmetic.add(args));
+    public void addWorks1() throws ArityException {
+        String[] args = {"aFunction", "3", "4", "5"};
+        TokensList tokens = new TokensList(args);
+        assertEquals("12", CoreFunctionsArithmetic.add(tokens).toString());
     }
 
     @Test
-    public void subWorks() {
-        String[] args = {"3", "4", "5"};
-        assertEquals("-6", CoreFunctionsArithmetic.sub(args));
+    public void subWorks() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "4", "5"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("-6", CoreFunctionsArithmetic.sub(tokens).toString());
     }
 
     @Test
-    public void mulWorks() {
-        String[] args = {"3", "4", "5"};
-        assertEquals("60", CoreFunctionsArithmetic.mul(args));
+    public void mulWorks() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "4", "5"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("60", CoreFunctionsArithmetic.mul(tokens).toString());
     }
 
     @Test
-    public void divWorks() {
-        String[] args = {"60", "5", "4"};
-        assertEquals("3", CoreFunctionsArithmetic.div(args));
+    public void divWorks() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "60", "5", "4"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("3", CoreFunctionsArithmetic.div(tokens).toString());
     }
 
     @Test
-    public void divByZeroReturnsErrMsg() {
-        String[] args = {"3", "0"};
+    public void divByZeroThrowsException() {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "0"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
         assertThrows(ArithmeticException.class, () -> {
-            CoreFunctionsArithmetic.div(args);
+            CoreFunctionsArithmetic.div(tokens);
         });
     }
 
     @Test
     public void modWorks() throws SyntaxException, ArityException {
-        String[] args = {"38", "5"};
-        assertEquals("3", CoreFunctionsArithmetic.mod(args));
-    }
-
-    @Test
-    public void listWorks() {
-        String[] tokens = {"3", "4", "5"};
-        assertEquals("(list 3 4 5)", CoreFunctionsList.list(tokens));
-    }
-
-    @Test
-    public void firstWorks1() throws ArityException {
-        String[] args = {"(list 3 4 5)"};
-        try {
-            assertEquals("3", CoreFunctionsList.first(args));
-        } catch (SyntaxException e) {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "38", "5"};
+        for (String item: args) {
+            tokens.add(new Token(item));
         }
+        assertEquals("3", CoreFunctionsArithmetic.mod(tokens).toString());
     }
 
     @Test
-    public void firstWorks2() throws ArityException {
-        String[] args = {"(list 5)"};
-        try {
-            assertEquals("5", CoreFunctionsList.first(args));
-        } catch (SyntaxException e) {
-        }
+    public void firstWorks1() throws ArityException, SyntaxException {
+        String[] args1 = {"first"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "3", "4", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("3", CoreFunctionsList.first(parentTokens).toString());
+    }
+
+    @Test
+    public void firstWorks2() throws ArityException, SyntaxException {
+        String[] args1 = {"first"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("5", CoreFunctionsList.first(parentTokens).toString());
     }
 
     @Test
     public void firstWorks3() throws SyntaxException, ArityException {
-        String[] args = {"(list)"};
-        assertEquals("nil", CoreFunctionsList.first(args));
+        String[] args1 = {"first"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("nil", CoreFunctionsList.first(parentTokens).toString());
     }
 
     @Test
-    public void restWorks() throws ArityException {
-        String[] args = {"(list 3 4 5)"};
-        try {
-            assertEquals("(list 4 5)", CoreFunctionsList.rest(args));
-        } catch (SyntaxException e) {
-        }
+    public void restWorks() throws ArityException, SyntaxException {
+        String[] args1 = {"rest"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "3", "4", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("(list 4 5)", CoreFunctionsList.rest(parentTokens).toString());
     }
 
     @Test
     public void restWorks2() throws SyntaxException, ArityException {
-        String[] args = {"(list)"};
-        assertEquals("(list)", CoreFunctionsList.rest(args));
+        String[] args1 = {"rest"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("(list)", CoreFunctionsList.rest(parentTokens).toString());
     }
 
     @Test
-    public void ltWorks1() {
-        String[] args = {"3", "4", "5"};
-        assertEquals("true", CoreFunctionsComparator.lt(args));
+    public void consWorks1() throws ArityException, SyntaxException {
+        String[] args1 = {"cons", "3"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "4", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("(list 3 4 5)", CoreFunctionsList.cons(parentTokens).toString());
     }
 
     @Test
-    public void ltWorks2() {
-        String[] args = {"3", "5", "4"};
-        assertEquals("false", CoreFunctionsComparator.lt(args));
+    public void consWorks2() throws ArityException, SyntaxException {
+        String[] args1 = {"cons"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "3"};
+        TokensList childTokens1 = new TokensList(args2);
+        String[] args3 = {"list", "4", "5"};
+        TokensList childTokens2 = new TokensList(args3);
+        parentTokens.add(childTokens1);
+        parentTokens.add(childTokens2);
+        assertEquals(
+                "(list (list 3) 4 5)",
+                CoreFunctionsList.cons(parentTokens).toString()
+        );
     }
 
     @Test
-    public void ltWorks3() {
-        String[] args = {"3"};
-        assertEquals("true", CoreFunctionsComparator.lt(args));
-    }
-
-    @Test
-    public void gtWorks1() {
-        String[] args = {"3", "2", "1"};
-        assertEquals("true", CoreFunctionsComparator.gt(args));
-    }
-
-    @Test
-    public void gtWorks2() {
-        String[] args = {"3", "5", "4"};
-        assertEquals("false", CoreFunctionsComparator.gt(args));
-    }
-
-    @Test
-    public void gtWorks3() {
-        String[] args = {"3"};
-        assertEquals("true", CoreFunctionsComparator.gt(args));
-    }
-
-    @Test
-    public void eqWorks1() {
-        String[] args = {"3", "3", "3"};
-        assertEquals("true", CoreFunctionsComparator.eq(args));
-    }
-
-    @Test
-    public void eqWorks2() {
-        String[] args = {"3", "3", "4"};
-        assertEquals("false", CoreFunctionsComparator.eq(args));
-    }
-
-    @Test
-    public void consWorks1() throws ArityException {
-        String[] args = {"3", "(list 4 5)"};
-        try {
-            assertEquals("(list 3 4 5)", CoreFunctionsList.cons(args));
-        } catch (SyntaxException e) {
+    public void ltWorks1() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "4", "5"};
+        for (String item: args) {
+            tokens.add(new Token(item));
         }
+        assertEquals("true", CoreFunctionsComparator.lt(tokens).toString());
     }
 
     @Test
-    public void consWorks2() throws ArityException {
-        String[] args = {"(list 3)", "(list 4 5)"};
-        try {
-            assertEquals("(list (list 3) 4 5)", CoreFunctionsList.cons(args));
-        } catch (SyntaxException e) {
+    public void ltWorks2() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "5", "4"};
+        for (String item: args) {
+            tokens.add(new Token(item));
         }
+        assertEquals("false", CoreFunctionsComparator.lt(tokens).toString());
     }
 
     @Test
-    public void andWorks1() throws SyntaxException {
-        String[] args = {"true", "true", "3"};
-        assertEquals("true", CoreFunctionsBoolean.and(args));
+    public void ltWorks3() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsComparator.lt(tokens).toString());
     }
 
     @Test
-    public void andWorks2() throws SyntaxException {
-        String[] args = {"false", "nil", "false"};
-        assertEquals("false", CoreFunctionsBoolean.and(args));
+    public void gtWorks1() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "2", "1"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsComparator.gt(tokens).toString());
     }
 
     @Test
-    public void orWorks1() throws SyntaxException {
-        String[] args = {"false", "nil", "true"};
-        assertEquals("true", CoreFunctionsBoolean.or(args));
+    public void gtWorks2() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "5", "4"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsComparator.gt(tokens).toString());
     }
 
     @Test
-    public void orWorks2() throws SyntaxException {
-        String[] args = {"false", "nil", "false"};
-        assertEquals("false", CoreFunctionsBoolean.and(args));
+    public void gtWorks3() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsComparator.gt(tokens).toString());
+    }
+
+    @Test
+    public void eqWorks1() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "3", "3"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsComparator.eq(tokens).toString());
+    }
+
+    @Test
+    public void eqWorks2() throws ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "3", "4"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsComparator.eq(tokens).toString());
+    }
+
+    @Test
+    public void andWorks1() throws SyntaxException, ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "true", "true", "3"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("3", CoreFunctionsBoolean.and(tokens).toString());
+    }
+
+    @Test
+    public void andWorks2() throws SyntaxException, ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "false", "nil", "false"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsBoolean.and(tokens).toString());
+    }
+
+    @Test
+    public void orWorks1() throws SyntaxException, ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "false", "nil", "true"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsBoolean.or(tokens).toString());
+    }
+
+    @Test
+    public void orWorks2() throws SyntaxException, ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "false", "nil", "false"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsBoolean.and(tokens).toString());
     }
 
     @Test
     public void notWorks1() throws SyntaxException, ArityException {
-        String[] args = {"false"};
-        assertEquals("true", CoreFunctionsBoolean.not(args));
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "false"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsBoolean.not(tokens).toString());
     }
 
     @Test
     public void notWorks2() throws SyntaxException, ArityException {
-        String[] args = {"true"};
-        assertEquals("false", CoreFunctionsBoolean.not(args));
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "true"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsBoolean.not(tokens).toString());
     }
 
     @Test
     public void notWorks3() throws SyntaxException, ArityException {
-        String[] args = {"nil"};
-        assertEquals("true", CoreFunctionsBoolean.not(args));
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "nil"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("true", CoreFunctionsBoolean.not(tokens).toString());
     }
 
     @Test
     public void notWorks4() throws SyntaxException, ArityException {
-        String[] args = {"-200"};
-        assertEquals("false", CoreFunctionsBoolean.not(args));
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "-200"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("false", CoreFunctionsBoolean.not(tokens).toString());
     }
 
     @Test
     public void consingOntoANonListThrowsException() {
-        String[] args = {"3", "true"};
+        String[] args = {"cons", "3", "true"};
+        TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.cons(args);
+            CoreFunctionsList.cons(tokens);
         });
     }
 
     @Test
     public void consingWithThreeArgsThrowsException() {
-        String[] args = {"3", "4", "(list 5 6)"};
+        String[] args = {"cons", "3", "4", "(list 5 6)"};
+        TokensList tokens = new TokensList(args);
         assertThrows(ArityException.class, () -> {
-            CoreFunctionsList.cons(args);
+            CoreFunctionsList.cons(tokens);
         });
     }
 
     @Test
     public void callingFirstWithANonListThrowsException() {
-        String[] args = {"true"};
+        String[] args = {"first", "true"};
+        TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.first(args);
+            CoreFunctionsList.first(tokens);
         });
     }
 
     @Test
     public void callingFirstWithTwoArgsThrowsException() {
-        String[] args = {"(list 1 2)", "(list 3 4)"};
+        String[] args1 = {"first", "3"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "4", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsList.first(args);
+            CoreFunctionsList.first(parentTokens);
         });
     }
 
     @Test
     public void callingRestWithANonListThrowsException() {
-        String[] args = {"true"};
+        String[] args = {"rest", "true"};
+        TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.rest(args);
+            CoreFunctionsList.rest(tokens);
         });
     }
 
     @Test
     public void callingRestWithTwoArgsThrowsException() {
-        String[] args = {"(list 1 2)", "(list 3 4)"};
+        String[] args1 = {"rest", "3"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "4", "5"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsList.rest(args);
+            CoreFunctionsList.rest(parentTokens);
         });
     }
 
     @Test
     public void callingModWithOneArgThrowsException() {
-        String[] args = {"80"};
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "80"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsArithmetic.mod(args);
+            CoreFunctionsArithmetic.mod(tokens);
         });
     }
 
     @Test
     public void callingNotWithTwoArgsThrowsException() {
-        String[] args = {"true", "false"};
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "true", "false"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsBoolean.not(args);
+            CoreFunctionsBoolean.not(tokens);
         });
     }
 }

@@ -2,11 +2,11 @@ package com.lissajouslaser;
 
 import java.io.CharArrayReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /*
  * Limitations:
@@ -16,7 +16,9 @@ import java.util.Map;
  *   also means function parameters are in a list
  *   instead of a vector, which is more similar to
  *   Common Lisp.
- * - Consing a value onto nil has not been implmented.
+ * - Consing a value onto nil has not been implmented
+ * - User defined functions don't override functions
+ *   supplied by the langauge.
  * - Functions and defined values are not in the same
  *   namespace - Lisp-2 rather than a Lisp-1
  * - Does not support anonymous functions.
@@ -29,11 +31,12 @@ import java.util.Map;
  * Evalutes inputted Clojure code.
  */
 public class Evaluate {
-    private Map<String, String> definedValues;
+    // Stores user defined values, lists.
+    private Map<Token, TokensListOrToken> definedValues;
     private Map<String, Function> userDefinedFunctions;
     // To check that all user defined functions call
     // functions that already exist.
-    private List<String> coreFunctions;
+    private Set<String> coreFunctions;
 
     /**
      * Class constructor.
@@ -43,36 +46,28 @@ public class Evaluate {
         userDefinedFunctions = new HashMap<>();
         String[] coreFunctionsArr = {"+", "-", "/", "*", "mod", "list",
                                      "cons", "first", "rest", "<", ">", "=",
-                                     "and", "or", "not", "def", "if", "fn"};
-        coreFunctions = new ArrayList<>(Arrays.asList(coreFunctionsArr));
+                                     "and", "or", "not", "def", "if", "defn"};
+        coreFunctions = new HashSet<>(Arrays.asList(coreFunctionsArr));
     }
 
-    public Map<String, String> getDefinedValues() {
+    Map<Token, TokensListOrToken> getDefinedValues() {
         return definedValues;
     }
 
-    public void setDefinedValues(Map<String, String> globalDefinedValues) {
-        definedValues = globalDefinedValues;
-    }
-
-    public Map<String, Function> getUserDefinedFunctions() {
+    Map<String, Function> getUserDefinedFunctions() {
         return userDefinedFunctions;
     }
 
-    public void setUserDefinedFunctions(Map<String, Function> functions) {
+    void setUserDefinedFunctions(Map<String, Function> functions) {
         userDefinedFunctions = functions;
-    }
-
-    public List<String> getCoreFunctions() {
-        return coreFunctions;
     }
 
     /**
      * If input is a list it will take apart and
      * function and arguments and put into an array.
      */
-    static ArrayList<String> tokeniseList(String expr) throws SyntaxException {
-        ArrayList<String> tokens = new ArrayList<>();
+    static TokensList tokeniseList(String expr) throws SyntaxException {
+        TokensList tokens = new TokensList();
 
         char[] exprAsChars = expr.trim().toCharArray();
         int i;
@@ -85,7 +80,7 @@ public class Evaluate {
         // Checks if reader position is currently inside a
         // nested expression.
         boolean nestedExpr = false;
-        StringBuilder token = new StringBuilder();
+        StringBuilder tokenBuilder = new StringBuilder();
 
         try {
             while ((i = charArrReader.read()) != -1) {
@@ -106,19 +101,19 @@ public class Evaluate {
                             // expressions.
                         } else {
                             nestedExpr = true;
-                            token.append((char) i);
+                            tokenBuilder.append((char) i);
                         }
                         break;
                     case ')':
                         closeParens++;
                         if (nestedExpr) {
-                            token.append((char) i);
+                            tokenBuilder.append((char) i);
                             // Does not add empty strings to tokens.
-                        } else if (token.length() == 0) {
+                        } else if (tokenBuilder.length() == 0) {
                             continue;
                         } else {
-                            tokens.add(token.substring(0));
-                            token.delete(0, token.length());
+                            tokens.add(new Token(tokenBuilder.substring(0)));
+                            tokenBuilder.delete(0, tokenBuilder.length());
                         }
                         if (openParens - closeParens == 1) {
                             nestedExpr = false;
@@ -131,19 +126,19 @@ public class Evaluate {
                         // deeper because they will be dealt with on
                         // recursion.
                         if (nestedExpr) {
-                            token.append((char) i);
+                            tokenBuilder.append((char) i);
                             // Does not add empty strings to tokens.
                             // For the case if input text has souble
                             // spaces.
-                        } else if (token.length() == 0) {
+                        } else if (tokenBuilder.length() == 0) {
                             continue;
                         } else {
-                            tokens.add(token.substring(0));
-                            token.delete(0, token.length());
+                            tokens.add(new Token(tokenBuilder.substring(0)));
+                            tokenBuilder.delete(0, tokenBuilder.length());
                         }
                         break;
                     default:
-                        token.append((char) i);
+                        tokenBuilder.append((char) i);
                         break;
                 }
             }
@@ -178,7 +173,7 @@ public class Evaluate {
      */
     static boolean isValidSymbol(String expr) {
         boolean matchesRegex = expr.trim().matches("[A-Za-z_-][\\w-?]*");
-        return  matchesRegex && !isBool(expr);
+        return matchesRegex && !isBool(expr);
     }
 
     /**
@@ -190,6 +185,14 @@ public class Evaluate {
     }
 
     /**
+     * Check that parameters list in a function is valid.
+     * Must be a un-nested list.
+     */
+    static boolean isParamList(String expr) {
+        return expr.trim().matches("\\([^\\(\\)]*\\)");
+    }
+
+    /**
      * Sends tokens to appropriate handler method
      * based on if tokens is an expression, and in
      * the event of an expression, what function
@@ -198,48 +201,44 @@ public class Evaluate {
      * Clojure is dynamically typed, and I needed
      * a way to return values of different types.
      */
-    String dispatcher(ArrayList<String> tokens)
+    TokensListOrToken dispatcher(TokensList tokens)
             throws SyntaxException, ArithmeticException,
-            NumberFormatException, ArityException {
+            NumberFormatException, ArityException, ClassCastException {
 
-        // Make array of tokens with only the args. Useful for
-        // variable arity functions that can be evaluated using
-        // collection streams.
-        String[] args = new String[tokens.size() - 1];
-        for (int i = 1; i < tokens.size(); i++) {
-            args[i - 1] = tokens.get(i);
-        }
-        switch (tokens.get(0)) {
+        String operator = ((Token) tokens.get(0)).toString();
+        switch (operator) {
             case "+":
-                return CoreFunctionsArithmetic.add(args);
+                return CoreFunctionsArithmetic.add(tokens);
             case "-":
-                return CoreFunctionsArithmetic.sub(args);
+                return CoreFunctionsArithmetic.sub(tokens);
             case "/":
-                return CoreFunctionsArithmetic.div(args);
+                return CoreFunctionsArithmetic.div(tokens);
             case "*":
-                return CoreFunctionsArithmetic.mul(args);
+                return CoreFunctionsArithmetic.mul(tokens);
             case "mod":
-                return CoreFunctionsArithmetic.mod(args);
+                return CoreFunctionsArithmetic.mod(tokens);
             case "list":
-                return CoreFunctionsList.list(args);
+                // List is a data structure so it does not
+                // require evaluation.
+                return tokens;
             case "cons":
-                return CoreFunctionsList.cons(args);
+                return CoreFunctionsList.cons(tokens);
             case "first":
-                return CoreFunctionsList.first(args);
+                return CoreFunctionsList.first(tokens);
             case "rest":
-                return CoreFunctionsList.rest(args);
+                return CoreFunctionsList.rest(tokens);
             case "<":
-                return CoreFunctionsComparator.lt(args);
+                return CoreFunctionsComparator.lt(tokens);
             case ">":
-                return CoreFunctionsComparator.gt(args);
+                return CoreFunctionsComparator.gt(tokens);
             case "=":
-                return CoreFunctionsComparator.eq(args);
+                return CoreFunctionsComparator.eq(tokens);
             case "and":
-                return CoreFunctionsBoolean.and(args);
+                return CoreFunctionsBoolean.and(tokens);
             case "or":
-                return CoreFunctionsBoolean.or(args);
+                return CoreFunctionsBoolean.or(tokens);
             case "not":
-                return CoreFunctionsBoolean.not(args);
+                return CoreFunctionsBoolean.not(tokens);
             default:
                 return userDefined(tokens);
         }
@@ -249,21 +248,27 @@ public class Evaluate {
      * Performs evaluation of expression, including evaluation
      * of nesteed expressions.
      */
-    public String eval(String expr)
+    public TokensListOrToken eval(Token token)
             throws SyntaxException, ArithmeticException,
-            NumberFormatException, ArityException {
+            NumberFormatException, ArityException, ClassCastException {
+
+        String expr = token.toString();
+
         if (isList(expr)) {
-            ArrayList<String> tokens = tokeniseList(expr);
+            TokensList tokens = tokeniseList(expr);
 
             if (tokens.isEmpty()) {
                 throw new SyntaxException("() is not supported.");
             }
-            switch (tokens.get(0)) {
+            String operator = ((Token) tokens.get(0)).toString();
+            switch (operator) {
                 case "def":
-                    // def is a special form: symbol representing name
-                    // should not be evaluated.
+                    // def is a special form: its name should not
+                    // be evaluated.
                     return def(tokens);
                 case "defn":
+                    // defn is a special form: only its body should be
+                    // evaluated, and only when arguments are passed to it.
                     return defn(tokens);
                 case "if":
                     // if is a special form: only the chosen branch should
@@ -274,42 +279,54 @@ public class Evaluate {
                     // Evaluating normal expressions.
                     // Create a new expression where aguments of the old
                     // expression have been evaluated.
-                    ArrayList<String> tokensWithEvaluatedArgs = new ArrayList<>();
+                    TokensList tokensWithEvaluatedArgs = new TokensList();
                     tokensWithEvaluatedArgs.add(tokens.get(0));
 
                     for (int i = 1; i < tokens.size(); i++) {
-                        tokensWithEvaluatedArgs.add(eval(tokens.get(i)));
+                        Token arg = (Token) tokens.get(i);
+                        tokensWithEvaluatedArgs.add(eval(arg));
                     }
                     return dispatcher(tokensWithEvaluatedArgs);
             }
         } else if (isNumber(expr) || isBool(expr)) {
-            return expr;
+            return token;
         } else if (isValidSymbol(expr)) {
-            String value = definedValues.get(expr);
-            if (value != null) {
-                return value;
-            } else {
+            TokensListOrToken valueOrList = getDefinedValues().get(token);
+            if (valueOrList == null) {
                 throw new SyntaxException("Unable to resolve symbol: " + expr
                         + " in this context.");
             }
+            return valueOrList;
         } else {
-            throw new SyntaxException("Unsupported input.");
+            throw new SyntaxException("Unsupported input: " + expr);
         }
+    }
+
+    /**
+     * Aceepts a String arg which is converted into a token.
+     */
+    public TokensListOrToken eval(String expr)
+        throws SyntaxException, ArithmeticException,
+        NumberFormatException, ArityException, ClassCastException {
+        return eval(new Token(expr));
     }
 
     /**
      * Allows you to define values.
      */
-    public String def(ArrayList<String> tokens)
-            throws SyntaxException, ArityException {
+    public Token def(TokensList tokens)
+            throws SyntaxException, ArityException, ClassCastException {
         final int numOfArgs = 2;
 
         if (tokens.size() != numOfArgs + 1) {
             throw new ArityException("clojure.core/def");
         }
-        if (isValidSymbol(tokens.get(1))) {
-            definedValues.put(tokens.get(1), eval(tokens.get(2)));
-            return "user/" + tokens.get(1);
+        Token valueName = (Token) tokens.get(1);
+        TokensListOrToken evaluatedExpr = eval((Token) tokens.get(2));
+
+        if (isValidSymbol(valueName.toString())) {
+            definedValues.put(valueName, evaluatedExpr);
+            return (Token) tokens.get(1);
         }
         throw new SyntaxException("Illegal name passed to clojure.core/def");
     }
@@ -321,107 +338,93 @@ public class Evaluate {
      * for an if expression with an else clause is false, nil
      * is returned.
      */
-    public String ifClj(ArrayList<String> tokens)
-            throws SyntaxException, ArityException {
-        final int listSizeTwoArgs = 3;
-        final int listSizeThreeArgs = 4;
+    public Token ifClj(TokensList tokens)
+            throws SyntaxException, ArityException, ClassCastException {
+        final int sizeTwoArgs = 3;
+        final int sizeThreeArgs = 4;
         final int testIdx = 1;
         final int trueCaseIdx = 2;
         final int falseCaseIdx = 3;
 
-
-        if (tokens.size() < listSizeTwoArgs
-                || tokens.size() > listSizeThreeArgs) {
+        if (tokens.size() < sizeTwoArgs
+                || tokens.size() > sizeThreeArgs) {
             throw new ArityException("clojure.core/if");
         }
-        String test = eval(tokens.get(testIdx));
-        if (CoreFunctionsBoolean.isNilOrFalse(test)) {
-            if (tokens.size() == listSizeThreeArgs) {
-                return eval(tokens.get(falseCaseIdx));
+        Token testExpr = (Token) eval((Token) tokens.get(testIdx));
+        if (CoreFunctionsBoolean.isNilOrFalse(testExpr.toString())) {
+            if (tokens.size() == sizeThreeArgs) {
+                return (Token) eval((Token) tokens.get(falseCaseIdx));
             } else {
-                return "nil";
+                return new Token("nil");
             }
         } else {
-            return eval(tokens.get(trueCaseIdx));
+            return (Token) eval((Token) tokens.get(trueCaseIdx));
         }
     }
 
     /**
      * Allows creation of functions.
      */
-    public String defn(ArrayList<String> tokens)
-            throws SyntaxException, ArityException {
-        final int listSize = 4;
+    public Token defn(TokensList tokens)
+            throws SyntaxException, ArityException, ClassCastException {
+        final int validSize = 4;
         final int bodyIdx = 3;
-        String fnName = tokens.get(1);
-        String params = tokens.get(2);
-        String body = tokens.get(bodyIdx);
+        String fnName = ((Token) tokens.get(1)).toString();
+        String params = ((Token) tokens.get(2)).toString();
+        String body = ((Token) tokens.get(bodyIdx)).toString();
 
-        if (tokens.size() != listSize) {
+        if (tokens.size() != validSize) {
             throw new ArityException("clojure.core/defn");
         }
         if (!isValidSymbol(fnName)) {
             throw new SyntaxException("Illegal name passed to "
                     + "clojure.core/defn");
         }
-        // Check params is list or vector.
-        if (!isList(params)) {
-            throw new SyntaxException("Illegal parameter passed to "
+        // Check params is an un-nested list.
+        if (!isParamList(params)) {
+            throw new SyntaxException("Illegal parameter list passed to "
                     + "clojure.core/defn");
         }
-        String validExprTest = isValidExpr(body, fnName);
-        if ("true".equals(validExprTest)) {
-            Function fn = new Function(fnName, tokeniseList(params), body);
-            userDefinedFunctions.put(fnName, fn);
+        isValidExpr(body, fnName); // throws exception if not valid
 
-            return "user/" + fnName;
-        } else {
-            // Not sure this is practially reachable.
-            throw new SyntaxException("Illegal body passed to "
-                    + "clojure.core/defn");
-        }
+        Function fn = new Function(fnName, tokeniseList(params), body);
+        userDefinedFunctions.put(fnName, fn);
+
+        return (Token) tokens.get(1);
     }
 
     /**
      * Checks function body is valid - it will only
      * check that expressions are in a proper list
      * structure and that the functions used are
-     * already defined funtions. It does no checking
-     * of the operands in any expression. Takes the
+     * already defined functions. It does no checking
+     * of the arguments in any expression. Takes the
      * functions name as an argument so that that an
      * expression can call the function itself when
      * checking for for valid functions - this
      * allows for recursive calls.
+     * Throws an excpetion if the check fails.
      */
-    String isValidExpr(String expr, String fnName)
-            throws SyntaxException {
+    void isValidExpr(String expr, String fnName)
+            throws SyntaxException, ClassCastException {
         if (isList(expr)) {
-            ArrayList<String> tokens = tokeniseList(expr);
-            String function = tokens.get(0);
+            TokensList tokens = tokeniseList(expr);
+            String function = ((Token) tokens.get(0)).toString();
 
-            if (function.matches(fnName)
+            if (function.matches(fnName) // for recursive calls
                     || coreFunctions.contains(function)
                     || userDefinedFunctions.keySet().contains(function)) {
 
-                ArrayList<String> isValidExprResults = new ArrayList<>();
-                isValidExprResults.add("true");
-
+                // Check if any sub-expressions are valid.
                 for (int i = 1; i < tokens.size(); i++) {
-                    isValidExprResults.add(isValidExpr(tokens.get(i), fnName));
+                    isValidExpr(((Token) tokens.get(i)).toString(), fnName);
                 }
-                String[] isValidExprResultsArr = new
-                        String[isValidExprResults.size()];
-                for (int i = 0; i < isValidExprResults.size(); i++) {
-                    isValidExprResultsArr[i] = isValidExprResults.get(i);
-                }
-                return CoreFunctionsBoolean
-                        .and(isValidExprResultsArr);
             } else {
                 throw new SyntaxException("Unable to resolve " + expr
                         + " in this context.");
             }
         } else if (isNumber(expr) || isBool(expr) || isValidSymbol(expr)) {
-            return "true";
+            return;
         } else {
             throw new SyntaxException("Illegal body passed to clojure.core/defn");
         }
@@ -429,19 +432,17 @@ public class Evaluate {
 
     /**
      * Tries to match a user defined function to the expression
-     * to evaluate.
+     * to evaluate, then applies function.
      */
-    String userDefined(ArrayList<String> tokens)
-            throws SyntaxException, ArityException {
-        String fnName = tokens.get(0);
-        Function fn = userDefinedFunctions.get(fnName);
-        if (fn == null) {
+    TokensListOrToken userDefined(TokensList tokens)
+            throws SyntaxException, ArityException, ClassCastException {
+        String fnName = ((Token) tokens.get(0)).toString();
+        Function function = userDefinedFunctions.get(fnName);
+        if (function == null) {
             throw new SyntaxException("Unable to resolve: " + fnName
                     + " in this context.");
         } else {
-            ArrayList<String> args = new
-                    ArrayList<>(tokens.subList(1, tokens.size()));
-            return fn.applyFn(args, this);
+            return function.applyFn(tokens, definedValues, userDefinedFunctions);
         }
     }
 }

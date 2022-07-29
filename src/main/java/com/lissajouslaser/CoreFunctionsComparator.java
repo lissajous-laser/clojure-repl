@@ -1,14 +1,13 @@
 package com.lissajouslaser;
 
-import java.util.Arrays;
-
 /**
  * Utility class which defines basic comparator functions
  * in the langauge.
  */
 public final class CoreFunctionsComparator {
 
-    private CoreFunctionsComparator() {}
+    private CoreFunctionsComparator() {
+    }
 
     /**
      * Determines if each successive element is greater,
@@ -17,15 +16,26 @@ public final class CoreFunctionsComparator {
      * to true. A single arg expression (< 3) evaluates
      * to true.
      */
-    public static String lt(String[] args) throws NumberFormatException {
-        int result = Arrays.stream(args)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(Integer.MIN_VALUE, (x, y) -> x < y ? y : Integer.MAX_VALUE);
-        if (result == Integer.MAX_VALUE) {
-            return "false";
-        } else {
-            return "true";
+    public static Token lt(TokensList tokens)
+            throws NumberFormatException, ArityException, ClassCastException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/<");
         }
+        int num1 = Integer.MIN_VALUE;
+
+        for (int i = 1; i < tokens.size(); i++) {
+            int num2 = Integer.valueOf(((Token) tokens.get(i)).toString());
+
+            if (num1 < num2) {
+                num1 = num2;
+            } else {
+                num1 = Integer.MAX_VALUE; // fail case
+            }
+        }
+        if (num1 == Integer.MAX_VALUE) {
+            return new Token("false");
+        }
+        return new Token("true");
     }
 
     /**
@@ -35,32 +45,58 @@ public final class CoreFunctionsComparator {
      * to true. A single arg expression (> 3) evaluates
      * to true.
      */
-    public static String gt(String[] args) throws NumberFormatException {
-        int result = Arrays.stream(args)
-                .mapToInt(x -> Integer.valueOf(x))
-                .reduce(Integer.MAX_VALUE, (x, y) -> x > y ? y : Integer.MIN_VALUE);
-        if (result == Integer.MIN_VALUE) {
-            return "false";
-        } else {
-            return "true";
+    public static Token gt(TokensList tokens)
+            throws NumberFormatException, ArityException, ClassCastException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/>");
         }
+        int num1 = Integer.MAX_VALUE;
+
+        for (int i = 1; i < tokens.size(); i++) {
+            int num2 = Integer.valueOf(((Token) tokens.get(i)).toString());
+
+            if (num1 > num2) {
+                num1 = num2;
+            } else {
+                num1 = Integer.MIN_VALUE; // fail case
+            }
+        }
+        if (num1 == Integer.MIN_VALUE) {
+            return new Token("false");
+        }
+        return new Token("true");
     }
 
     /**
-     * Determines if each successive element is equal,
-     * eg. an expression (= 3 3) or (= false false false)
+     * Determines if each successive element is equal
+     * to the prior ones, looks for value equality rather
+     * than identity equality.
+     * eg. an expression like (= false false false) or
+     * (= (list 1 2) (list 1 2))
      * evaluates to true. A single arg expression (= 3)
      * evaluates to true.
      */
-    public static String eq(String[] args) {
-        String init = args[0];
-
-        String result = Arrays.stream(args)
-                .reduce(init, (x, y) -> x.equals(y) ? y : "¡!¡!");
-        if ("¡!¡!".equals(result)) {
-            return "false";
-        } else {
-            return "true";
+    public static Token eq(TokensList tokens) throws ArityException {
+        if (tokens.size() < 2) {
+            throw new ArityException("clojure.core/=");
         }
+        if (tokens.size() == 2) {
+            return new Token("true");
+        }
+        TokensListOrToken item1 = tokens.get(1);
+
+        for (int i = 2; i < tokens.size(); i++) {
+            TokensListOrToken item2 = tokens.get(i);
+
+            if (item1.equals(item2)) {
+                item1 = item2;
+            } else {
+                item1 = null; // fail case
+            }
+        }
+        if (item1 == null) {
+            return new Token("false");
+        }
+        return new Token("true");
     }
 }
