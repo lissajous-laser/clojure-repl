@@ -4,7 +4,7 @@ import java.util.LinkedList;
 
 /**
  * An ArrayList of type TokensListOrToken.
- * It can store other TokensLists or Tokens.
+ * It is used to store other TokensLists or Tokens.
  */
 public class TokensList extends LinkedList<TokensListOrToken>
         implements TokensListOrToken {

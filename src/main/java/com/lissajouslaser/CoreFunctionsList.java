@@ -11,28 +11,7 @@ public final class CoreFunctionsList {
     }
 
     /**
-     * Passing list recursively through eval is better than
-     * returning it as an unaltered expression, becuase any
-     * sub-expressions in the list will be evaluated.
-     */
-    // TODO - see if list() is still necessary
-    // public static String list(String[] args) {
-    // StringBuilder returnString = new StringBuilder();
-
-    // returnString.append("(list ");
-
-    // for (String str: args) {
-    // returnString.append(str);
-    // returnString.append(" ");
-    // }
-    // // Delete last space character.
-    // returnString.deleteCharAt(returnString.length() - 1);
-    // returnString.append(")");
-    // return returnString.substring(0);
-    // }
-
-    /**
-     * Adds an element to the front of the list.
+     * Adds an element at the front of the list.
      */
     public static TokensList cons(TokensList tokens)
             throws SyntaxException, ArityException {
@@ -57,8 +36,8 @@ public final class CoreFunctionsList {
     }
 
     /**
-     * Returns the first item of a list. Passing an empty list
-     * to first returns null.
+     * Returns the first element of a list. Passing an empty list
+     * to first returns nil.
      */
     public static TokensListOrToken first(TokensList tokens)
             throws SyntaxException, ArityException {
@@ -83,7 +62,8 @@ public final class CoreFunctionsList {
     }
 
     /**
-     * Returns a list without its first item.
+     * Returns a list without its first element. Passing an
+     * empty list to rest returns an empty list.
      */
     public static TokensList rest(TokensList tokens)
             throws SyntaxException, ArityException {

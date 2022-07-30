@@ -3,7 +3,7 @@ package com.lissajouslaser;
 import java.util.Map;
 
 /**
- * Class for user defined functions.
+ * Class that represents a user defined function.
  */
 public class Function extends Evaluate {
     private String name;
@@ -21,13 +21,13 @@ public class Function extends Evaluate {
     }
 
     /**
-     * Subtitutes the parameters in function body for the
-     * arguments, then evaluates.
+     * Adds parameter-argument bindings to local scope and then
+     * performs application of the function.
      */
     public TokensListOrToken applyFn(
             TokensList tokens,
             Map<Token, TokensListOrToken> globalDefinedValues,
-            Map<String, Function> globalUserDefinedFunctions
+            Map<Token, Function> globalUserDefinedFunctions
     ) throws SyntaxException, ArityException, ClassCastException {
 
         // Make sure number of args and params are equal.

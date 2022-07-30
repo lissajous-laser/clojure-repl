@@ -3,7 +3,6 @@ package com.lissajouslaser;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -13,28 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class EvaluateTest {
 
     @Test
-    public void tokeniseWorks1() throws SyntaxException {
-        TokensList tokens = new TokensList();
-        tokens.add(new Token("+"));
-        tokens.add(new Token("2"));
-        tokens.add(new Token("3"));
-        assertTrue(Evaluate.tokeniseList("(+ 2 3)").equals(tokens));
-    }
-
-    @Test
-    public void tokeniseThrowsExceptionWhenGivenSyntaxError() {
-        assertThrows(SyntaxException.class,
-                () -> {
-                    Evaluate.tokeniseList("))");
-                });
-    }
-
-    @Test
     public void dispatcherToListWorks() throws SyntaxException, ArityException {
-        Evaluate eval = new Evaluate();
         String[] tokensArr = {"list", "3", "4", "5"};
         TokensList tokens = new TokensList(tokensArr);
-        assertEquals("(list 3 4 5)", eval.dispatcher(tokens).toString());
+        assertEquals("(list 3 4 5)", Dispatch.pass(tokens).toString());
     }
 
     @Test
@@ -86,26 +67,6 @@ public class EvaluateTest {
     public void evalWorks8() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         assertEquals("(list -3)", evaluate.eval("(cons -3 (list))").toString());
-    }
-
-    @Test
-    public void isValidSymbolWorks1() throws SyntaxException {
-        assertTrue(Evaluate.isValidSymbol("a-number-4"));
-    }
-
-    @Test
-    public void isValidSymbolWorks2() throws SyntaxException {
-        assertFalse(Evaluate.isValidSymbol("1st-Number"));
-    }
-
-    @Test
-    public void isNumberWorks1() throws SyntaxException {
-        assertTrue(Evaluate.isValidSymbol("-52"));
-    }
-
-    @Test
-    public void isValidBoolWorks1() throws SyntaxException {
-        assertTrue(Evaluate.isBool("true"));
     }
 
     @Test
@@ -161,7 +122,7 @@ public class EvaluateTest {
     public void defnStoresFunction() throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn increment (n) (+ n 1))");
-        assertTrue(evaluate.getUserDefinedFunctions().get("increment") != null);
+        assertTrue(evaluate.getUserDefinedFunctions().get(new Token("increment")) != null);
     }
 
     @Test
@@ -268,11 +229,11 @@ public class EvaluateTest {
     }
 
     @Test
-    public void showCoreFunctionsAreNotOverridden()
+    public void coreFunctionsCanBeOverridden()
             throws SyntaxException, ArityException {
         Evaluate evaluate = new Evaluate();
         evaluate.eval("(defn not (x) nil)");
-        assertEquals("true", evaluate.eval("(not false)").toString());
+        assertEquals("nil", evaluate.eval("(not false)").toString());
     }
 
     @Test

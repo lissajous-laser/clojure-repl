@@ -13,8 +13,8 @@ public final class CoreFunctionsComparator {
      * Determines if each successive element is greater,
      * eg. an expression (< 3 4) or (< 3 4 5 6) is
      * equivalent to 3 < 4 or 3 < 4 < 5 < 6 and evaluates
-     * to true. A single arg expression (< 3) evaluates
-     * to true.
+     * to true. A single argument expression eg. (< 3) 
+     * evaluates to true.
      */
     public static Token lt(TokensList tokens)
             throws NumberFormatException, ArityException, ClassCastException {
@@ -42,8 +42,8 @@ public final class CoreFunctionsComparator {
      * Determines if each successive element is smaller,
      * eg. an expression (> 3 2) or (> 3 2 1 0) is
      * equivalent to 3 > 2 or 3 > 2 > 1 > 0 and evaluates
-     * to true. A single arg expression (> 3) evaluates
-     * to true.
+     * to true. A single argument expression eg. (> 3) 
+     * evaluates to true.
      */
     public static Token gt(TokensList tokens)
             throws NumberFormatException, ArityException, ClassCastException {

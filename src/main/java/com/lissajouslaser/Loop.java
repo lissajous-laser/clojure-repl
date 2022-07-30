@@ -3,8 +3,8 @@ package com.lissajouslaser;
 import java.util.Scanner;
 
 /**
- * Mediates repl loop, reads user input and prints results
- * to output.
+ * Mediates looping of the repl, scans user input and prints
+ * the output of evaluaton.
  */
 public class Loop {
     private Evaluate evaluate;
@@ -21,7 +21,7 @@ public class Loop {
     }
 
     /**
-     * Starts repl.
+     * Starts the repl.
      */
     public void start() {
         String input = "";

@@ -1,7 +1,7 @@
 package com.lissajouslaser;
 
 /**
- * Class for exceptions arising from incorrect
+ * An exception arising from incorrect
  * syntax inputted by the user.
  */
 public class SyntaxException extends Exception {

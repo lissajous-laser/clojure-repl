@@ -10,7 +10,7 @@ public final class CoreFunctionsArithmetic {
     }
 
     /**
-     * Add arguments.
+     * Add arguments. Unary operation is 0 + argument.
      */
     public static Token add(TokensList tokens)
             throws NumberFormatException, ArityException {
@@ -26,7 +26,8 @@ public final class CoreFunctionsArithmetic {
     }
 
     /**
-     * Subtract from first arg the rest of the args.
+     * Subtract from first argument the rest of the arguments.
+     * Unary operation is 0 - argument.
      */
     public static Token sub(TokensList tokens)
             throws NumberFormatException, ArityException {
@@ -51,7 +52,7 @@ public final class CoreFunctionsArithmetic {
     }
 
     /**
-     * Multiply args.
+     * Multiply arguments. Unary operation is 1 * argument.
      */
     public static Token mul(TokensList tokens)
             throws NumberFormatException, ArityException {
@@ -67,7 +68,8 @@ public final class CoreFunctionsArithmetic {
     }
 
     /**
-     * Divide from first arg the rest of the args.
+     * Divide from first argument the rest of the arguments.
+     * Unary operation is 1 / argument.
      */
     public static Token div(TokensList tokens)
             throws ArithmeticException, NumberFormatException, ArityException {

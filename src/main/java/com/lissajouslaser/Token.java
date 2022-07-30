@@ -2,7 +2,10 @@ package com.lissajouslaser;
 
 /**
  * Encapsulates a parsed token. A token is immutable because
- * its instance variable is final and is also a String.
+ * its instance variable is final and is a String. Integers
+ * and boolean types are represented as Strings due to the
+ * complexity of implementing a dynamically typed language in
+ * a statically typed language.
  */
 public class Token implements TokensListOrToken {
     private final String tokenStr;
