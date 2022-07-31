@@ -9,13 +9,13 @@ import java.io.IOException;
  */
 public final class Tokeniser {
 
-    public Tokeniser() {}
+    private Tokeniser() {}
 
     /**
      * If input is a list it will take apart and
      * function and arguments and put into an array.
      */
-    static TokensList tokenise(String expr) throws SyntaxException {
+    static TokensList run(String expr) throws SyntaxException {
         TokensList tokens = new TokensList();
 
         char[] exprAsChars = expr.trim().toCharArray();

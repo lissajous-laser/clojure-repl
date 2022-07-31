@@ -15,14 +15,14 @@ public class TokeniserTest {
         tokens.add(new Token("+"));
         tokens.add(new Token("2"));
         tokens.add(new Token("3"));
-        assertTrue(Tokeniser.tokenise("(+ 2 3)").equals(tokens));
+        assertTrue(Tokeniser.run("(+ 2 3)").equals(tokens));
     }
 
     @Test
     public void tokeniseThrowsExceptionWhenGivenSyntaxError() {
         assertThrows(SyntaxException.class,
                 () -> {
-                    Tokeniser.tokenise("))");
+                    Tokeniser.run("))");
                 });
     }
 }

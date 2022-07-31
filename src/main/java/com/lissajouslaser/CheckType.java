@@ -4,7 +4,7 @@ package com.lissajouslaser;
  * Contains functions for checking the 'type' of a Token's
  * encapsulated value.
  */
-final class CheckType {
+public final class CheckType {
 
     private CheckType() {}
 
@@ -12,21 +12,21 @@ final class CheckType {
      * Checks if you have a list.
      */
     static boolean isList(String expr) {
-        return expr.trim().matches("\\(.*\\)");
+        return expr.matches("\\(.*\\)");
     }
 
     /**
      * Check if you have a number.
      */
     static boolean isNumber(String expr) {
-        return expr.trim().matches("-?\\d+");
+        return expr.matches("-?\\d+");
     }
 
     /**
      * Check if you have a symbol in the valid format.
      */
     static boolean isValidSymbol(String expr) {
-        boolean matchesRegex = expr.trim().matches("[A-Za-z_-][\\w-?]*");
+        boolean matchesRegex = expr.matches("[A-Za-z_-][\\w-?]*");
         return matchesRegex && !isBool(expr);
     }
 
@@ -35,7 +35,7 @@ final class CheckType {
      * convenience.
      */
     static boolean isBool(String expr) {
-        return expr.trim().matches("true|false|nil");
+        return expr.matches("true|false|nil");
     }
 
     /**
@@ -43,7 +43,14 @@ final class CheckType {
      * Must be a un-nested list.
      */
     static boolean isParamList(String expr) {
-        return expr.trim().matches("\\([^\\(\\)]*\\)");
+        return expr.matches("\\([^\\(\\)]*\\)");
+    }
+
+    /**
+     * Test to see if a value is falsey.
+     */
+    public static boolean isLogicalFalse(String expr) {
+        return "false".equals(expr) || "nil".equals(expr);
     }
 }
 

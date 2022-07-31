@@ -10,7 +10,7 @@ package com.lissajouslaser;
 public class Token implements TokensListOrToken {
     private final String tokenStr;
 
-    Token(String tokenStr) {
+    public Token(String tokenStr) {
         this.tokenStr = tokenStr;
     }
 

@@ -1,19 +1,44 @@
 package com.lissajouslaser;
 
+import com.lissajouslaser.functions.Add;
+import com.lissajouslaser.functions.And;
+import com.lissajouslaser.functions.Cons;
+import com.lissajouslaser.functions.Divide;
+import com.lissajouslaser.functions.Equals;
+import com.lissajouslaser.functions.First;
+import com.lissajouslaser.functions.GreaterThan;
+import com.lissajouslaser.functions.LessThan;
+import com.lissajouslaser.functions.List;
+import com.lissajouslaser.functions.Mod;
+import com.lissajouslaser.functions.Multiply;
+import com.lissajouslaser.functions.Not;
+import com.lissajouslaser.functions.Or;
+import com.lissajouslaser.functions.Rest;
+import com.lissajouslaser.functions.Subtract;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
- * Tests for CoreFunctions class.
+ * Tests for functions in the com.lissajouslaser.functions package.
  */
-public class CoreFunctionsTest {
+public class FunctionsTest {
+    private final Add add = new Add();
+    private final Mod mod = new Mod();
+    private final And and = new And();
+    private final Or or = new Or();
+    private final Not not = new Not();
+    private final Cons cons = new Cons();
+    private final First first = new First();
+    private final Rest rest = new Rest();
+
     @Test
     public void addWorks1() throws ArityException {
         String[] args = {"aFunction", "3", "4", "5"};
         TokensList tokens = new TokensList(args);
-        assertEquals("12", CoreFunctionsArithmetic.add(tokens).toString());
+
+        assertEquals("12", add.applyFn(tokens).toString());
     }
 
     @Test
@@ -23,7 +48,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("-6", CoreFunctionsArithmetic.sub(tokens).toString());
+        Subtract sub = new Subtract();
+        assertEquals("-6", sub.applyFn(tokens).toString());
     }
 
     @Test
@@ -33,7 +59,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("60", CoreFunctionsArithmetic.mul(tokens).toString());
+        Multiply mul = new Multiply();
+        assertEquals("60", mul.applyFn(tokens).toString());
     }
 
     @Test
@@ -43,7 +70,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("3", CoreFunctionsArithmetic.div(tokens).toString());
+        Divide div = new Divide();
+        assertEquals("3", div.applyFn(tokens).toString());
     }
 
     @Test
@@ -53,8 +81,9 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
+        Divide div = new Divide();
         assertThrows(ArithmeticException.class, () -> {
-            CoreFunctionsArithmetic.div(tokens);
+            div.applyFn(tokens);
         });
     }
 
@@ -65,7 +94,15 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("3", CoreFunctionsArithmetic.mod(tokens).toString());
+        assertEquals("3", mod.applyFn(tokens).toString());
+    }
+
+    @Test
+    public void listWorks() throws ArityException, SyntaxException {
+        String[] args = {"list", "3", "4", "5"};
+        TokensList tokens = new TokensList(args);
+        List list = new List();
+        assertEquals("(list 3 4 5)", list.applyFn(tokens).toString());
     }
 
     @Test
@@ -75,7 +112,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list", "3", "4", "5"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("3", CoreFunctionsList.first(parentTokens).toString());
+        assertEquals("3", first.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -85,7 +122,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list", "5"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("5", CoreFunctionsList.first(parentTokens).toString());
+        assertEquals("5", first.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -95,7 +132,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("nil", CoreFunctionsList.first(parentTokens).toString());
+        assertEquals("nil", first.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -105,7 +142,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list", "3", "4", "5"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("(list 4 5)", CoreFunctionsList.rest(parentTokens).toString());
+        assertEquals("(list 4 5)", rest.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -115,7 +152,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("(list)", CoreFunctionsList.rest(parentTokens).toString());
+        assertEquals("(list)", rest.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -125,7 +162,7 @@ public class CoreFunctionsTest {
         String[] args2 = {"list", "4", "5"};
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
-        assertEquals("(list 3 4 5)", CoreFunctionsList.cons(parentTokens).toString());
+        assertEquals("(list 3 4 5)", cons.applyFn(parentTokens).toString());
     }
 
     @Test
@@ -140,7 +177,7 @@ public class CoreFunctionsTest {
         parentTokens.add(childTokens2);
         assertEquals(
                 "(list (list 3) 4 5)",
-                CoreFunctionsList.cons(parentTokens).toString()
+                cons.applyFn(parentTokens).toString()
         );
     }
 
@@ -151,7 +188,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsComparator.lt(tokens).toString());
+        LessThan lt = new LessThan();
+        assertEquals("true", lt.applyFn(tokens).toString());
     }
 
     @Test
@@ -161,7 +199,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsComparator.lt(tokens).toString());
+        LessThan lt = new LessThan();
+        assertEquals("false", lt.applyFn(tokens).toString());
     }
 
     @Test
@@ -171,7 +210,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsComparator.lt(tokens).toString());
+        LessThan lt = new LessThan();
+        assertEquals("true", lt.applyFn(tokens).toString());
     }
 
     @Test
@@ -181,7 +221,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsComparator.gt(tokens).toString());
+        GreaterThan gt = new GreaterThan();
+        assertEquals("true", gt.applyFn(tokens).toString());
     }
 
     @Test
@@ -191,7 +232,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsComparator.gt(tokens).toString());
+        GreaterThan gt = new GreaterThan();
+        assertEquals("false", gt.applyFn(tokens).toString());
     }
 
     @Test
@@ -201,7 +243,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsComparator.gt(tokens).toString());
+        GreaterThan gt = new GreaterThan();
+        assertEquals("true", gt.applyFn(tokens).toString());
     }
 
     @Test
@@ -211,7 +254,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsComparator.eq(tokens).toString());
+        Equals eq = new Equals();
+        assertEquals("true", eq.applyFn(tokens).toString());
     }
 
     @Test
@@ -221,7 +265,8 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsComparator.eq(tokens).toString());
+        Equals eq = new Equals();
+        assertEquals("false", eq.applyFn(tokens).toString());
     }
 
     @Test
@@ -231,7 +276,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("3", CoreFunctionsBoolean.and(tokens).toString());
+        assertEquals("3", and.applyFn(tokens).toString());
     }
 
     @Test
@@ -241,7 +286,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsBoolean.and(tokens).toString());
+        assertEquals("false", and.applyFn(tokens).toString());
     }
 
     @Test
@@ -251,7 +296,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsBoolean.or(tokens).toString());
+        assertEquals("true", or.applyFn(tokens).toString());
     }
 
     @Test
@@ -261,7 +306,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsBoolean.and(tokens).toString());
+        assertEquals("false", or.applyFn(tokens).toString());
     }
 
     @Test
@@ -271,7 +316,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsBoolean.not(tokens).toString());
+        assertEquals("true", not.applyFn(tokens).toString());
     }
 
     @Test
@@ -281,7 +326,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsBoolean.not(tokens).toString());
+        assertEquals("false", not.applyFn(tokens).toString());
     }
 
     @Test
@@ -291,7 +336,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("true", CoreFunctionsBoolean.not(tokens).toString());
+        assertEquals("true", not.applyFn(tokens).toString());
     }
 
     @Test
@@ -301,7 +346,7 @@ public class CoreFunctionsTest {
         for (String item: args) {
             tokens.add(new Token(item));
         }
-        assertEquals("false", CoreFunctionsBoolean.not(tokens).toString());
+        assertEquals("false", not.applyFn(tokens).toString());
     }
 
     @Test
@@ -309,7 +354,7 @@ public class CoreFunctionsTest {
         String[] args = {"cons", "3", "true"};
         TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.cons(tokens);
+            cons.applyFn(tokens);
         });
     }
 
@@ -318,7 +363,7 @@ public class CoreFunctionsTest {
         String[] args = {"cons", "3", "4", "(list 5 6)"};
         TokensList tokens = new TokensList(args);
         assertThrows(ArityException.class, () -> {
-            CoreFunctionsList.cons(tokens);
+            cons.applyFn(tokens);
         });
     }
 
@@ -327,7 +372,7 @@ public class CoreFunctionsTest {
         String[] args = {"first", "true"};
         TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.first(tokens);
+            first.applyFn(tokens);
         });
     }
 
@@ -339,7 +384,7 @@ public class CoreFunctionsTest {
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsList.first(parentTokens);
+            first.applyFn(parentTokens);
         });
     }
 
@@ -348,7 +393,7 @@ public class CoreFunctionsTest {
         String[] args = {"rest", "true"};
         TokensList tokens = new TokensList(args);
         assertThrows(SyntaxException.class, () -> {
-            CoreFunctionsList.rest(tokens);
+            rest.applyFn(tokens);
         });
     }
 
@@ -360,7 +405,7 @@ public class CoreFunctionsTest {
         TokensList childTokens = new TokensList(args2);
         parentTokens.add(childTokens);
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsList.rest(parentTokens);
+            rest.applyFn(parentTokens);
         });
     }
 
@@ -372,7 +417,7 @@ public class CoreFunctionsTest {
             tokens.add(new Token(item));
         }
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsArithmetic.mod(tokens);
+            mod.applyFn(tokens);
         });
     }
 
@@ -384,7 +429,7 @@ public class CoreFunctionsTest {
             tokens.add(new Token(item));
         }
         assertThrows(ArityException.class,  () -> {
-            CoreFunctionsBoolean.not(tokens);
+            not.applyFn(tokens);
         });
     }
 }

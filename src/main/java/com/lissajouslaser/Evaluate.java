@@ -32,7 +32,7 @@ import java.util.Set;
 public class Evaluate {
     // Stores user defined values, lists.
     private Map<Token, TokensListOrToken> definedValues;
-    private Map<Token, Function> userDefinedFunctions;
+    private Map<Token, Function> definedFunctions;
     // To check that all user defined functions call
     // functions that already exist.
     private Set<String> coreFunctions;
@@ -42,23 +42,37 @@ public class Evaluate {
      */
     public Evaluate() {
         definedValues = new HashMap<>();
-        userDefinedFunctions = new HashMap<>();
-        String[] coreFunctionsArr = {"+", "-", "/", "*", "mod", "list",
-                                     "cons", "first", "rest", "<", ">", "=",
-                                     "and", "or", "not", "def", "if", "defn"};
+        definedFunctions = new HashMap<>();
+        String[] coreFunctionsArr = {"if", "def", "defn"};
         coreFunctions = new HashSet<>(Arrays.asList(coreFunctionsArr));
+    }
+
+    /**
+     * For passing a namespace with pre-defined functions.
+     */
+    public Evaluate(Map<Token, Function> definedFunctions) {
+        this();
+        this.definedFunctions = definedFunctions;
+
     }
 
     Map<Token, TokensListOrToken> getDefinedValues() {
         return definedValues;
     }
 
-    Map<Token, Function> getUserDefinedFunctions() {
-        return userDefinedFunctions;
+    Map<Token, Function> getdefinedFunctions() {
+        return definedFunctions;
     }
 
-    void setUserDefinedFunctions(Map<Token, Function> functions) {
-        userDefinedFunctions = functions;
+    void setdefinedFunctions(Map<Token, Function> functions) {
+        definedFunctions = functions;
+    }
+
+    /**
+     * Used by subclasses.
+     */
+    void copyDefinedValues(Map<Token, TokensListOrToken> globalDefinedValues) {
+        getDefinedValues().putAll(globalDefinedValues);
     }
 
     /**
@@ -72,7 +86,7 @@ public class Evaluate {
         String expr = token.toString();
 
         if (CheckType.isList(expr)) {
-            TokensList tokens = Tokeniser.tokenise(expr);
+            TokensList tokens = Tokeniser.run(expr);
 
             if (tokens.isEmpty()) {
                 throw new SyntaxException("Unsupported input: " + expr);
@@ -126,7 +140,7 @@ public class Evaluate {
     public TokensListOrToken eval(String expr)
         throws SyntaxException, ArithmeticException,
         NumberFormatException, ArityException, ClassCastException {
-        return eval(new Token(expr));
+        return eval(new Token(expr.trim()));
     }
 
     /**
@@ -169,7 +183,7 @@ public class Evaluate {
             throw new ArityException("clojure.core/if");
         }
         Token testExpr = (Token) eval((Token) tokens.get(testIdx));
-        if (CoreFunctionsBoolean.isNilOrFalse(testExpr.toString())) {
+        if (CheckType.isLogicalFalse(testExpr.toString())) {
             if (tokens.size() == sizeThreeArgs) {
                 return (Token) eval((Token) tokens.get(falseCaseIdx));
             } else {
@@ -187,26 +201,32 @@ public class Evaluate {
             throws SyntaxException, ArityException, ClassCastException {
         final int validSize = 4;
         final int bodyIdx = 3;
-        String fnName = ((Token) tokens.get(1)).toString();
-        String params = ((Token) tokens.get(2)).toString();
-        String body = ((Token) tokens.get(bodyIdx)).toString();
+        Token fnName = (Token) tokens.get(1);
+        Token params = (Token) tokens.get(2);
+        TokensList tokenisedParams = Tokeniser.run(params.toString());
+        Token body = (Token) tokens.get(bodyIdx);
 
         if (tokens.size() != validSize) {
             throw new ArityException("clojure.core/defn");
         }
-        if (!CheckType.isValidSymbol(fnName)) {
+        if (!CheckType.isValidSymbol(fnName.toString())) {
             throw new SyntaxException("Illegal name passed to "
                     + "clojure.core/defn");
         }
         // Check params is an un-nested list.
-        if (!CheckType.isParamList(params)) {
+        if (!CheckType.isParamList(params.toString())) {
             throw new SyntaxException("Illegal parameter list passed to "
                     + "clojure.core/defn");
         }
-        isValidExpr(body, fnName); // throws exception if not valid
+        isValidExpr(body, fnName, tokenisedParams); // throws exception if not valid
 
-        Function fn = new Function(fnName, Tokeniser.tokenise(params), body);
-        userDefinedFunctions.put((Token) tokens.get(1), fn);
+        UserDefinedFunction fn = new UserDefinedFunction(
+                fnName,
+                Tokeniser.run(params.toString()),
+                body
+
+        );
+        definedFunctions.put((Token) tokens.get(1), fn);
 
         return new Token(fn.toString());
     }
@@ -223,30 +243,41 @@ public class Evaluate {
      * allows for recursive calls.
      * Throws an excpetion if the check fails.
      */
-    void isValidExpr(String expr, String fnName)
+    void isValidExpr(Token token, Token fnName, TokensList tokenisedParams)
             throws SyntaxException, ClassCastException {
+
+        String expr = token.toString();
+
         if (CheckType.isList(expr)) {
-            TokensList tokens = Tokeniser.tokenise(expr);
+            TokensList tokens = Tokeniser.run(expr);
             Token function = (Token) tokens.get(0);
 
-            if (function.toString().matches(fnName) // for recursive calls
+            if (function.equals(fnName) // for recursive calls
                     || coreFunctions.contains(function.toString())
-                    || userDefinedFunctions.keySet().contains(function)) {
+                    || definedFunctions.keySet().contains(function)) {
 
                 // Check if any sub-expressions are valid.
                 for (int i = 1; i < tokens.size(); i++) {
-                    isValidExpr(((Token) tokens.get(i)).toString(), fnName);
+                    isValidExpr((Token) tokens.get(i), fnName, tokenisedParams);
                 }
             } else {
                 throw new SyntaxException("Unable to resolve " + expr
                         + " in this context.");
             }
         } else if (CheckType.isNumber(expr)
-                || CheckType.isBool(expr)
-                || CheckType.isValidSymbol(expr)) {
+                || CheckType.isBool(expr)) {
             return;
+        } else if (CheckType.isValidSymbol(expr)) {
+            // Check symbol is defined or symbol is function parameter.
+            if (definedValues.get(token) != null
+                    || tokenisedParams.contains(token)) {
+                return;
+            }
+            throw new SyntaxException("Unable to resolve " + expr
+                    + " in this context.");
         } else {
-            throw new SyntaxException("Illegal body passed to clojure.core/defn");
+            throw new SyntaxException("Illegal body passed to"
+                    + "clojure.core/defn");
         }
     }
 
@@ -257,11 +288,15 @@ public class Evaluate {
     TokensListOrToken userDefined(TokensList tokens)
             throws SyntaxException, ArityException, ClassCastException {
         Token fnName = (Token) tokens.get(0);
-        Function function = userDefinedFunctions.get(fnName);
+        Function function = definedFunctions.get(fnName);
         if (function == null) {
-            return Dispatch.pass(tokens);
-        } else {
-            return function.applyFn(tokens, definedValues, userDefinedFunctions);
+            throw new SyntaxException("Unable to resolve " + fnName
+                    + " in this context.");
         }
+        if (function instanceof Evaluate) {
+            ((Evaluate) function).setdefinedFunctions(definedFunctions);
+            ((Evaluate) function).copyDefinedValues(definedValues);
+        }
+        return function.applyFn(tokens);
     }
 }

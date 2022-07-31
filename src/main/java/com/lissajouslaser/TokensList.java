@@ -9,11 +9,11 @@ import java.util.LinkedList;
 public class TokensList extends LinkedList<TokensListOrToken>
         implements TokensListOrToken {
 
-    TokensList() {
+    public TokensList() {
         super();
     }
 
-    TokensList(TokensList original) {
+    public TokensList(TokensList original) {
         super(original);
     }
 
@@ -21,7 +21,7 @@ public class TokensList extends LinkedList<TokensListOrToken>
      * Converts an array of Strings into a
      * TokensList of Tokens.
      */
-    TokensList(String[] array) {
+    public TokensList(String[] array) {
         super();
         for (String item: array) {
             this.add(new Token(item));
