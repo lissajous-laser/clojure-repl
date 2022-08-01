@@ -15,11 +15,12 @@ public final class NamespaceInitialiser {
     /**
      * Creates mapping of functions from a list of functions.
      */
-    public static Map<Token, Function> run(List<Function> fnList) {
-        Map<Token, Function> definedFunctions = new HashMap<>();
+    public static Map<Token, TokensListOrToken>
+            run(List<Function> fnList) {
+        Map<Token, TokensListOrToken> definedFunctions = new HashMap<>();
 
         for (Function fn: fnList) {
-            definedFunctions.put(fn.getName(), fn);
+            definedFunctions.put(fn.getName(), (TokensListOrToken) fn);
         }
         return definedFunctions;
     }

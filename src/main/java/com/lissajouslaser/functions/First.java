@@ -12,6 +12,10 @@ import com.lissajouslaser.TokensListOrToken;
  */
 public class First implements Function {
 
+    public boolean isEvalutionNormal() {
+        return true;
+    }
+
     public Token getName() {
         return new Token("first");
     }
@@ -21,24 +25,23 @@ public class First implements Function {
      * to first returns nil.
      */
     public TokensListOrToken applyFn(TokensList tokens)
-            throws SyntaxException, ArityException {
+            throws SyntaxException, ArityException, ClassCastException {
 
         if (tokens.size() != 2) {
             throw new ArityException("clojure.core/first");
         }
         // Check if second arg is a list.
-        TokensListOrToken secondArg = tokens.get(1);
-        if (secondArg instanceof TokensList
-                && ((TokensList) secondArg).get(0) instanceof Token
-                && ((Token) ((TokensList) secondArg).get(0)).toString().equals("list")) {
+        TokensList secondArg = (TokensList) tokens.get(1);
+        if (((Token) secondArg.get(0)).toString().equals("list")) {
 
-            TokensList list = (TokensList) secondArg;
+            TokensList list = secondArg;
 
             if (list.size() == 1) {
                 return new Token("nil"); // for empty list
             }
             return list.get(1);
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/first");
+        throw new SyntaxException("Illegal list passed to clojure.core/first" + tokens);
     }
 }
+

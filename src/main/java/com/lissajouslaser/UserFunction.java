@@ -1,11 +1,9 @@
 package com.lissajouslaser;
 
-import java.util.Map;
-
 /**
  * Class that represents a user defined function.
  */
-public class UserDefinedFunction extends Evaluate
+public class UserFunction extends ComplexEvaluation
         implements Function {
     private Token name;
     private TokensList params;
@@ -14,19 +12,14 @@ public class UserDefinedFunction extends Evaluate
     /**
      * Class constructor.
      */
-    public UserDefinedFunction(Token name, TokensList params, Token body) {
-        super();
+    public UserFunction(Token name, TokensList params, Token body) {
         this.name = name;
         this.params = params;
         this.body = body;
     }
 
-    public void setLocalNamespace(
-            Map<Token, TokensListOrToken> globalDefinedValues,
-            Map<Token, Function> globalUserDefinedFunctions
-    ) {
-        getDefinedValues().putAll(globalDefinedValues);
-        setdefinedFunctions(globalUserDefinedFunctions);
+    public boolean isEvalutionNormal() {
+        return true;
     }
 
     public Token getName() {
@@ -48,7 +41,7 @@ public class UserDefinedFunction extends Evaluate
         for (int i = 0; i < params.size(); i++) {
             Token param = (Token) params.get(i);
             TokensListOrToken arg = tokens.get(i + 1);
-            getDefinedValues().put(param, arg);
+            getDefinitions().put(param, arg);
         }
         return eval(body);
     }

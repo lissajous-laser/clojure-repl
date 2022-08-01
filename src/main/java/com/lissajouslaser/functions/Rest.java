@@ -5,12 +5,15 @@ import com.lissajouslaser.Function;
 import com.lissajouslaser.SyntaxException;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
-import com.lissajouslaser.TokensListOrToken;
 
 /**
  * Clojure rest function.
  */
 public class Rest implements Function {
+
+    public boolean isEvalutionNormal() {
+        return true;
+    }
 
     public Token getName() {
         return new Token("rest");
@@ -28,12 +31,10 @@ public class Rest implements Function {
             throw new ArityException("clojure.core/rest");
         }
         // Check arg is a list.
-        TokensListOrToken secondArg = tokens.get(1);
-        if (secondArg instanceof TokensList
-                && ((TokensList) secondArg).get(0) instanceof Token
-                && ((Token) ((TokensList) secondArg).get(0)).toString().equals("list")) {
+        TokensList secondArg = (TokensList) tokens.get(1);
+        if (((Token) secondArg.get(0)).toString().equals("list")) {
 
-            TokensList list = new TokensList((TokensList) secondArg);
+            TokensList list = new TokensList(secondArg);
 
             if (list.size() > 1) {
                 list.remove(1);

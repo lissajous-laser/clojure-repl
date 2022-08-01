@@ -353,7 +353,7 @@ public class FunctionsTest {
     public void consingOntoANonListThrowsException() {
         String[] args = {"cons", "3", "true"};
         TokensList tokens = new TokensList(args);
-        assertThrows(SyntaxException.class, () -> {
+        assertThrows(ClassCastException.class, () -> {
             cons.applyFn(tokens);
         });
     }
@@ -371,7 +371,7 @@ public class FunctionsTest {
     public void callingFirstWithANonListThrowsException() {
         String[] args = {"first", "true"};
         TokensList tokens = new TokensList(args);
-        assertThrows(SyntaxException.class, () -> {
+        assertThrows(ClassCastException.class, () -> {
             first.applyFn(tokens);
         });
     }
@@ -392,7 +392,7 @@ public class FunctionsTest {
     public void callingRestWithANonListThrowsException() {
         String[] args = {"rest", "true"};
         TokensList tokens = new TokensList(args);
-        assertThrows(SyntaxException.class, () -> {
+        assertThrows(ClassCastException.class, () -> {
             rest.applyFn(tokens);
         });
     }

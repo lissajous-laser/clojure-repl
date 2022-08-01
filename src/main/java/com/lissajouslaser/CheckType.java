@@ -11,21 +11,21 @@ public final class CheckType {
     /**
      * Checks if you have a list.
      */
-    static boolean isList(String expr) {
+    public static boolean isList(String expr) {
         return expr.matches("\\(.*\\)");
     }
 
     /**
      * Check if you have a number.
      */
-    static boolean isNumber(String expr) {
+    public static boolean isNumber(String expr) {
         return expr.matches("-?\\d+");
     }
 
     /**
      * Check if you have a symbol in the valid format.
      */
-    static boolean isValidSymbol(String expr) {
+    public static boolean isValidSymbol(String expr) {
         boolean matchesRegex = expr.matches("[A-Za-z_-][\\w-?]*");
         return matchesRegex && !isBool(expr);
     }
@@ -34,15 +34,17 @@ public final class CheckType {
      * Check if you have a boolean. nil is included here for
      * convenience.
      */
-    static boolean isBool(String expr) {
-        return expr.matches("true|false|nil");
+    public static boolean isBool(String expr) {
+        return "false".equals(expr)
+                || "nil".equals(expr)
+                || "true".equals(expr);
     }
 
     /**
      * Check that parameters list in a function is valid.
      * Must be a un-nested list.
      */
-    static boolean isParamList(String expr) {
+    public static boolean isParamList(String expr) {
         return expr.matches("\\([^\\(\\)]*\\)");
     }
 

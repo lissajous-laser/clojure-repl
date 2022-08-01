@@ -8,6 +8,7 @@ import com.lissajouslaser.functions.Equals;
 import com.lissajouslaser.functions.First;
 import com.lissajouslaser.functions.GreaterThan;
 import com.lissajouslaser.functions.LessThan;
+import com.lissajouslaser.functions.List;
 import com.lissajouslaser.functions.Mod;
 import com.lissajouslaser.functions.Multiply;
 import com.lissajouslaser.functions.Not;
@@ -24,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
  * Tests for loop class.
  */
 public class LoopTest {
-    private Map<Token, Function> definedFunctions = NamespaceInitialiser.run(
+    private Map<Token, TokensListOrToken> definedFunctions = NamespaceInitialiser.run(
         java.util.List.of(
             new Add(),
             new And(),
@@ -34,7 +35,7 @@ public class LoopTest {
             new First(),
             new GreaterThan(),
             new LessThan(),
-            new com.lissajouslaser.functions.List(),
+            new List(),
             new Mod(),
             new Multiply(),
             new Not(),

@@ -15,7 +15,7 @@ public final class Tokeniser {
      * If input is a list it will take apart and
      * function and arguments and put into an array.
      */
-    static TokensList run(String expr) throws SyntaxException {
+    public static TokensList run(String expr) throws SyntaxException {
         TokensList tokens = new TokensList();
 
         char[] exprAsChars = expr.trim().toCharArray();

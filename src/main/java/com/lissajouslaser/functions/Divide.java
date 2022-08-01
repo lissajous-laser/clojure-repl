@@ -10,6 +10,10 @@ import com.lissajouslaser.TokensList;
  */
 public class Divide implements Function {
 
+    public boolean isEvalutionNormal() {
+        return true;
+    }
+
     public Token getName() {
         return new Token("/");
     }

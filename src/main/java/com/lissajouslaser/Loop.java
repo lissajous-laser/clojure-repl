@@ -10,11 +10,6 @@ public class Loop {
     private Evaluate evaluate;
     private Scanner scanner;
 
-    public Loop() {
-        evaluate = new Evaluate();
-        scanner = new Scanner(System.in);
-    }
-
     public Loop(Evaluate evaluate, Scanner scanner) {
         this.evaluate = evaluate;
         this.scanner = scanner;
@@ -48,5 +43,4 @@ public class Loop {
         }
         System.out.println("Bye for now!");
     }
-
 }

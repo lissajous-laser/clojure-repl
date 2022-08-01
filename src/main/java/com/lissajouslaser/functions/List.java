@@ -3,11 +3,16 @@ package com.lissajouslaser.functions;
 import com.lissajouslaser.Function;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
+import com.lissajouslaser.TokensListOrToken;
 
 /**
  * List function.
  */
-public class List implements Function {
+public class List implements Function, TokensListOrToken {
+
+    public boolean isEvalutionNormal() {
+        return true;
+    }
 
     public Token getName() {
         return new Token("list");

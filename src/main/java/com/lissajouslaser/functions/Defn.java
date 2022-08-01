@@ -1,81 +1,65 @@
-package com.lissajouslaser;
+package com.lissajouslaser.functions;
 
-import java.util.Map;
-
-/*
- * Limitations:
- * - No reader macro for non-evaluating lists, eg '()
- *   needs to be writtern as (list).
- * - Lists are the only supported data structe. this
- *   also means function parameters are in a list
- *   instead of a vector, which is more similar to
- *   Common Lisp.
- * - Supported types are integers, lists, booleans
- *   and nil.
- * - Consing a value onto nil has not been implmented
- * - No support for higher order functions.
- * - Does not support anonymous functions.
- * - No support for partial function application
- * - No support for multiple expressions
- */
+import com.lissajouslaser.ArityException;
+import com.lissajouslaser.CheckType;
+import com.lissajouslaser.ComplexEvaluation;
+import com.lissajouslaser.Define;
+import com.lissajouslaser.Function;
+import com.lissajouslaser.SyntaxException;
+import com.lissajouslaser.Token;
+import com.lissajouslaser.Tokeniser;
+import com.lissajouslaser.TokensList;
+import com.lissajouslaser.UserFunction;
 
 /**
- * Evaluates inputted code and contains the namespace
- * of user definitions.
+ * Define functions function.
  */
-public class Evaluate extends ComplexEvaluation {
+public class Defn extends ComplexEvaluation
+        implements Function, Define {
 
-    /**
-     * For passing a namespace with pre-defined functions.
-     */
-    public Evaluate(Map<Token, TokensListOrToken> definitions) {
-        setDefinitions(definitions);
+    public boolean isEvalutionNormal() {
+        return false;
+    }
+
+    public Token getName() {
+        return new Token("defn");
     }
 
     /**
-     * Like eval(Token token) but accepts a String instead
-     * which is converted into a token.
+     * Allows creation of named functions.
      */
-    public TokensListOrToken eval(String expr)
-        throws SyntaxException, ArithmeticException,
-        NumberFormatException, ArityException, ClassCastException {
-        return eval(new Token(expr.trim()));
-    }
-
-    /**
-     * Allows creation of anonymous functions.
-     */
-    public Function fn(TokensList tokens)
-        throws SyntaxException, ArityException, ClassCastException {
-        final int validSize = 3;
-        Token params = (Token) tokens.get(1);
+    public Token applyFn(TokensList tokens)
+            throws SyntaxException, ArityException, ClassCastException {
+        final int validSize = 4;
+        final int bodyIdx = 3;
+        Token fnName = (Token) tokens.get(1);
+        Token params = (Token) tokens.get(2);
         TokensList tokenisedParams = Tokeniser.run(params.toString());
-        Token body = (Token) tokens.get(2);
+        Token body = (Token) tokens.get(bodyIdx);
 
         if (tokens.size() != validSize) {
-            throw new ArityException("clojure.core/fn");
+            throw new ArityException("clojure.core/defn");
         }
-        // Name an anonymous function with a random number from 0 to 999.
-        final int multiplier = 1000;
-        Token fnName = new Token(
-            "fn-" + Integer.toString(
-                (int) (Math.random() * multiplier)
-            )
-        );
-
+        if (!CheckType.isValidSymbol(fnName.toString())) {
+            throw new SyntaxException("Illegal name passed to "
+                    + "clojure.core/defn");
+        }
         // Check params is an un-nested list.
         if (!CheckType.isParamList(params.toString())) {
             throw new SyntaxException("Illegal parameter list passed to "
-                    + "clojure.core/fn");
+                    + "clojure.core/defn");
         }
-        isValidExpr(body, fnName, tokenisedParams);
+        isValidExpr(body, fnName, tokenisedParams); // throws exception if not valid
 
         UserFunction fn = new UserFunction(
                 fnName,
                 Tokeniser.run(params.toString()),
                 body
         );
-        return fn;
+        getDefinitions().put((Token) tokens.get(1), fn);
+
+        // Returns function name.
+        return fnName;
     }
 
     /**

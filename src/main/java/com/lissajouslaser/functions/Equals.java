@@ -11,6 +11,10 @@ import com.lissajouslaser.TokensListOrToken;
  */
 public class Equals implements Function {
 
+    public boolean isEvalutionNormal() {
+        return true;
+    }
+
     public Token getName() {
         return new Token("=");
     }

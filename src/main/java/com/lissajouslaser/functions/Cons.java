@@ -5,12 +5,15 @@ import com.lissajouslaser.Function;
 import com.lissajouslaser.SyntaxException;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
-import com.lissajouslaser.TokensListOrToken;
 
 /**
  * Clojure cons function, for 'construct'.
  */
 public class Cons implements Function {
+
+    public boolean isEvalutionNormal() {
+        return true;
+    }
 
     public Token getName() {
         return new Token("cons");
@@ -28,12 +31,10 @@ public class Cons implements Function {
             throw new ArityException("clojure.core/cons");
         }
         // Check third arg is a list.
-        TokensListOrToken thirdArg = tokens.get(2);
-        if (thirdArg instanceof TokensList
-                && ((TokensList) thirdArg).get(0) instanceof Token
-                && ((Token) ((TokensList) thirdArg).get(0)).toString().equals("list")) {
+        TokensList thirdArg = (TokensList) tokens.get(2);
+        if (((Token) thirdArg.get(0)).toString().equals("list")) {
 
-            TokensList list = new TokensList((TokensList) thirdArg);
+            TokensList list = new TokensList(thirdArg);
             list.add(1, tokens.get(1));
 
             return list;
