@@ -4,6 +4,7 @@ import com.lissajouslaser.functions.Add;
 import com.lissajouslaser.functions.And;
 import com.lissajouslaser.functions.Cons;
 import com.lissajouslaser.functions.Divide;
+import com.lissajouslaser.functions.Empty;
 import com.lissajouslaser.functions.Equals;
 import com.lissajouslaser.functions.First;
 import com.lissajouslaser.functions.GreaterThan;
@@ -32,6 +33,7 @@ public class FunctionsTest {
     private final Cons cons = new Cons();
     private final First first = new First();
     private final Rest rest = new Rest();
+    private final Empty empty = new Empty();
 
     @Test
     public void addWorks1() throws ArityException {
@@ -432,4 +434,25 @@ public class FunctionsTest {
             not.applyFn(tokens);
         });
     }
+
+    @Test
+    public void emptyWorks1() throws ArityException, SyntaxException {
+        String[] args1 = {"rest"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("true", empty.applyFn(parentTokens).toString());
+    }
+
+    @Test
+    public void emptyWorks2() throws ArityException, SyntaxException {
+        String[] args1 = {"rest"};
+        TokensList parentTokens = new TokensList(args1);
+        String[] args2 = {"list", "1"};
+        TokensList childTokens = new TokensList(args2);
+        parentTokens.add(childTokens);
+        assertEquals("false", empty.applyFn(parentTokens).toString());
+    }
+
 }

@@ -3,14 +3,17 @@ package com.lissajouslaser.functions;
 import com.lissajouslaser.Function;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
-import com.lissajouslaser.TokensListOrToken;
 
 /**
  * List function.
  */
-public class List implements Function, TokensListOrToken {
+public class List implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 

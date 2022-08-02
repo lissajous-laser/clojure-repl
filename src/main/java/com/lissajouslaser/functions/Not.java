@@ -11,7 +11,11 @@ import com.lissajouslaser.TokensList;
  */
 public class Not implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 

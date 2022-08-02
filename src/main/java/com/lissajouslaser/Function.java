@@ -16,7 +16,15 @@ public interface Function extends TokensListOrToken {
      * and will need to to have evaluation implemented in
      * applyFn().
      */
-    boolean isEvalutionNormal();
+    boolean isEvaluationNormal();
+
+    /**
+     * A function with isDefinitionCreator() returning true will
+     * have its definitions instance variable reference the
+     * definitions of Evaluate, ie. the namespace, to allow it
+     * to add new definitions to the namespace.
+     */
+    boolean isDefinitionCreator();
 
     Token getName();
 

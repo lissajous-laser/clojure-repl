@@ -3,7 +3,6 @@ package com.lissajouslaser.functions;
 import com.lissajouslaser.ArityException;
 import com.lissajouslaser.CheckType;
 import com.lissajouslaser.ComplexEvaluation;
-import com.lissajouslaser.Define;
 import com.lissajouslaser.Function;
 import com.lissajouslaser.SyntaxException;
 import com.lissajouslaser.Token;
@@ -14,9 +13,13 @@ import com.lissajouslaser.TokensListOrToken;
  * Define values function.
  */
 public class Def extends ComplexEvaluation
-    implements Function, Define {
+    implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return true;
+    }
+
+    public boolean isEvaluationNormal() {
         return false;
     }
 

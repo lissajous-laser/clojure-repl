@@ -11,13 +11,12 @@ import com.lissajouslaser.TokensList;
 import com.lissajouslaser.UserFunction;
 
 /**
- * Define functions function.
+ * Fn function, Clojure anonymous function.
  */
-public class Defn extends ComplexEvaluation
-        implements Function {
+public class Fn extends ComplexEvaluation implements Function {
 
     public boolean isDefinitionCreator() {
-        return true;
+        return false;
     }
 
     public boolean isEvaluationNormal() {
@@ -25,44 +24,45 @@ public class Defn extends ComplexEvaluation
     }
 
     public Token getName() {
-        return new Token("defn");
+        return new Token("fn");
     }
 
     /**
-     * Allows creation of named functions.
+     * Allows creation of anonymous functions. It returns a Function,
+     * so the Function will reside in a ListOfTokens.
      */
-    public Token applyFn(TokensList tokens)
-            throws SyntaxException, ArityException, ClassCastException {
-        final int validSize = 4;
-        final int bodyIdx = 3;
-        Token fnName = (Token) tokens.get(1);
-        Token params = (Token) tokens.get(2);
+    public Function applyFn(TokensList tokens)
+        throws SyntaxException, ArityException, ClassCastException {
+        final int validSize = 3;
+        Token params = (Token) tokens.get(1);
         TokensList tokenisedParams = Tokeniser.run(params.toString());
-        Token body = (Token) tokens.get(bodyIdx);
+        Token body = (Token) tokens.get(2);
 
         if (tokens.size() != validSize) {
-            throw new ArityException("clojure.core/defn");
+            throw new ArityException("clojure.core/fn");
         }
-        if (!CheckType.isValidSymbol(fnName.toString())) {
-            throw new SyntaxException("Illegal name passed to "
-                    + "clojure.core/defn");
-        }
+        // Name an anonymous function with a random number from 0 to 999.
+        final int multiplier = 1000;
+        Token fnName = new Token(
+            "fn-" + Integer.toString(
+                (int) (Math.random() * multiplier)
+            )
+        );
+
         // Check params is an un-nested list.
         if (!CheckType.isParamList(params.toString())) {
             throw new SyntaxException("Illegal parameter list passed to "
-                    + "clojure.core/defn");
+                    + "clojure.core/fn");
         }
-        isValidExpr(body, fnName, tokenisedParams); // throws exception if not valid
+        isValidExpr(body, fnName, tokenisedParams);
 
         UserFunction fn = new UserFunction(
                 fnName,
                 Tokeniser.run(params.toString()),
                 body
         );
-        getDefinitions().put((Token) tokens.get(1), fn);
-
-        // Returns function name.
-        return fnName;
+        System.out.println("Function created."); ///
+        return fn;
     }
 
     /**
@@ -87,7 +87,6 @@ public class Defn extends ComplexEvaluation
             Token function = (Token) tokens.get(0);
 
             if (function.equals(fnName) // for recursive calls
-                    || tokenisedParams.contains(function) // higher order functions
                     || getDefinitions().keySet().contains(function)) {
 
                 // Check if any sub-expressions are valid.

@@ -11,7 +11,11 @@ import com.lissajouslaser.TokensList;
  */
 public class Cons implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 
@@ -23,7 +27,7 @@ public class Cons implements Function {
      * Adds an element at the front of a list.
      */
     public TokensList applyFn(TokensList tokens)
-            throws SyntaxException, ArityException {
+            throws SyntaxException, ArityException, ClassCastException {
 
         final int validSize = 3;
 
@@ -33,7 +37,7 @@ public class Cons implements Function {
         // Check third arg is a list.
         TokensList thirdArg = (TokensList) tokens.get(2);
         if (((Token) thirdArg.get(0)).toString().equals("list")) {
-
+            // Create duplicate list.
             TokensList list = new TokensList(thirdArg);
             list.add(1, tokens.get(1));
 

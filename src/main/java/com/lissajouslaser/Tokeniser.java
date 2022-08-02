@@ -40,6 +40,11 @@ public final class Tokeniser {
                 }
 
                 switch (i) {
+                    // Allows Clojure vectors to be converted to lists.
+                    // Only use is for allowing Clojure function
+                    // parameters parameters to be inputted as a
+                    // Clojure vector.
+                    case '[':
                     case '(':
                         openParens++;
                         // No action on the parens that wraps the
@@ -50,13 +55,14 @@ public final class Tokeniser {
                             // expressions.
                         } else {
                             nestedExpr = true;
-                            tokenBuilder.append((char) i);
+                            tokenBuilder.append('(');
                         }
                         break;
+                    case ']':
                     case ')':
                         closeParens++;
                         if (nestedExpr) {
-                            tokenBuilder.append((char) i);
+                            tokenBuilder.append(')');
                             // Does not add empty strings to tokens.
                         } else if (tokenBuilder.length() == 0) {
                             continue;
@@ -77,7 +83,7 @@ public final class Tokeniser {
                         if (nestedExpr) {
                             tokenBuilder.append((char) i);
                             // Does not add empty strings to tokens.
-                            // For the case if input text has souble
+                            // For the case if input text has double
                             // spaces.
                         } else if (tokenBuilder.length() == 0) {
                             continue;

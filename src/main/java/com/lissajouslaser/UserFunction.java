@@ -18,7 +18,11 @@ public class UserFunction extends ComplexEvaluation
         this.body = body;
     }
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 

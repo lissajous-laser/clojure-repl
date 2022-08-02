@@ -6,8 +6,10 @@ import com.lissajouslaser.functions.Cons;
 import com.lissajouslaser.functions.Def;
 import com.lissajouslaser.functions.Defn;
 import com.lissajouslaser.functions.Divide;
+import com.lissajouslaser.functions.Empty;
 import com.lissajouslaser.functions.Equals;
 import com.lissajouslaser.functions.First;
+import com.lissajouslaser.functions.Fn;
 import com.lissajouslaser.functions.GreaterThan;
 import com.lissajouslaser.functions.If;
 import com.lissajouslaser.functions.LessThan;
@@ -42,7 +44,9 @@ public final class App {
             new Def(),
             new Defn(),
             new Equals(),
+            new Empty(),
             new First(),
+            new Fn(),
             new GreaterThan(),
             new If(),
             new LessThan(),
@@ -60,5 +64,15 @@ public final class App {
         Evaluate evaluate = new Evaluate(definedFunctions);
         Loop loop = new Loop(evaluate, new Scanner(System.in));
         loop.start();
+
+        // TokensList  myFn = Tokeniser.run("(defn add [x y] (+ x y))");
+
+        // for (TokensListOrToken element: myFn)
+        //     System.out.println(element);
+
+        // evaluate.eval("(defn curryed-division (divisor) "
+        //         + "(fn (dividend) (/ dividend divisor))) ");
+        // evaluate.eval("(def divide-by-2 (curryed-division 2))");
+        // System.out.println(evaluate.eval("(divide-by-2 30)"));
     }
 }

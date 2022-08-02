@@ -18,7 +18,11 @@ public class If extends ComplexEvaluation implements Function {
         super();
     }
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return false;
     }
 
@@ -49,12 +53,12 @@ public class If extends ComplexEvaluation implements Function {
         Token testExpr = (Token) eval((Token) tokens.get(testIdx));
         if (CheckType.isLogicalFalse(testExpr.toString())) {
             if (tokens.size() == sizeThreeArgs) {
-                return (Token) eval((Token) tokens.get(falseCaseIdx));
+                return eval((Token) tokens.get(falseCaseIdx));
             } else {
                 return new Token("nil");
             }
         } else {
-            return (Token) eval((Token) tokens.get(trueCaseIdx));
+            return eval((Token) tokens.get(trueCaseIdx));
         }
     }
 }

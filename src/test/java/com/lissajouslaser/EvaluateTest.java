@@ -6,8 +6,10 @@ import com.lissajouslaser.functions.Cons;
 import com.lissajouslaser.functions.Def;
 import com.lissajouslaser.functions.Defn;
 import com.lissajouslaser.functions.Divide;
+import com.lissajouslaser.functions.Empty;
 import com.lissajouslaser.functions.Equals;
 import com.lissajouslaser.functions.First;
+import com.lissajouslaser.functions.Fn;
 import com.lissajouslaser.functions.GreaterThan;
 import com.lissajouslaser.functions.If;
 import com.lissajouslaser.functions.LessThan;
@@ -37,8 +39,10 @@ public class EvaluateTest {
             new Def(),
             new Defn(),
             new Divide(),
+            new Empty(),
             new Equals(),
             new First(),
+            new Fn(),
             new GreaterThan(),
             new If(),
             new LessThan(),
@@ -432,5 +436,99 @@ public class EvaluateTest {
         assertThrows(SyntaxException.class, () -> {
             evaluate.eval("(+ a 3");
         });
+    }
+
+    @Test
+    public void fnWorks1() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertEquals("4", evaluate.eval("((fn (x) (+ x 1)) 3)").toString());
+    }
+
+    @Test
+    public void highOrderFunctionWorks1() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn do-something (x) (x 100 8))");
+        assertEquals("4", evaluate.eval("(do-something mod)").toString());
+    }
+
+    // Implement map function.
+    @Test
+    public void highOrderFunctionWorks2() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn map (function numbers)"
+                + " (if (= (first numbers) nil)"
+                + " (list)"
+                + " (cons (function (first numbers))"
+                + " (map function (rest numbers)))))");
+        evaluate.eval("(defn increment (x) (+ x 1))");
+        assertEquals(
+            "(list 2 3 4)",
+            evaluate.eval("(map increment (list 1 2 3))"
+        ).toString());
+    }
+
+    // Implement map function.
+    @Test
+    public void highOrderFunctionWorks3() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn map (function numbers)"
+                + " (if (= (first numbers) nil)"
+                + " (list)"
+                + " (cons (function (first numbers))"
+                + " (map function (rest numbers)))))");
+        assertEquals(
+            "(list 1 3 5)",
+            evaluate.eval("(map first (list (list 1 2) (list 3 4) (list 5 6)))"
+        ).toString());
+    }
+
+    // Implement filter function.
+    @Test
+    public void highOrderFunctionWorks4() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn filter (function numbers)"
+                + " (if (empty? numbers)"
+                + " (list)"
+                + " (if (function (first numbers))"
+                + " (cons (first numbers) (filter function (rest numbers)))"
+                + " (filter function (rest numbers)))))");
+        evaluate.eval("(defn multiple-of-3? (x) (= (mod x 3) 0))");
+        assertEquals(
+            "(list 3 6 9)",
+            evaluate.eval("(filter multiple-of-3? (list 1 2 3 4 5 6 7 8 9))"
+        ).toString());
+    }
+
+    // Implement reduce function.
+    @Test
+    public void highOrderFunctionWorks5() throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn reduce (function accum numbers)"
+                + " (if (empty? numbers)"
+                + " accum"
+                + " (reduce function"
+                + " (function accum (first numbers))"
+                + " (rest numbers))))");
+        assertEquals(
+            "15",
+            evaluate.eval("(reduce + 0 (list 1 2 3 4 5))"
+        ).toString());
+    }
+
+    @Test
+    public void higherOrderFunctionWithAnonymousFunctionWorks()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(defn filter [function numbers]"
+                + " (if (empty? numbers)"
+                + " (list)"
+                + " (if (function (first numbers))"
+                + " (cons (first numbers) (filter function (rest numbers)))"
+                + " (filter function (rest numbers)))))");
+        assertEquals(
+            "(list 12 5 0 0 5 12)",
+            evaluate.eval("(filter (fn [x] (or (> x 0) (= x 0))) "
+            + "(list 12 5 0 -3 -4 -3 0 5 12))"
+        ).toString());
     }
 }

@@ -5,8 +5,8 @@ import java.util.Map;
 
 /**
  * Contains methods for the evalution of nested expressions.
- * Used by classes where there deal with nested expressions,
- * and expressions where not all the arguments are evalutated.
+ * Used by the Evaluate class, and by Function classes that
+ * have special evaluation rules.
  */
 public abstract class ComplexEvaluation {
     // Stores defined values, lists and functions.
@@ -39,10 +39,6 @@ public abstract class ComplexEvaluation {
      * Performs evaluation of expression, including evaluation
      * of nested expressions.
      */
-    /**
-     * Performs evaluation of expression, including evaluation
-     * of nested expressions.
-     */
     public TokensListOrToken eval(Token token)
             throws SyntaxException, ArithmeticException,
             NumberFormatException, ArityException, ClassCastException {
@@ -51,14 +47,23 @@ public abstract class ComplexEvaluation {
 
         if (CheckType.isList(expr)) {
             TokensList tokens = Tokeniser.run(expr);
-            Function function = getFunctionReady(tokens);
+            Function function = (Function) eval((Token) tokens.get(0));
 
-            if (!function.isEvalutionNormal()) {
+            if (function.isDefinitionCreator()) {
+                // For functions that add defintiions, eg. def, defn.
+                ((ComplexEvaluation) function).setDefinitions(getDefinitions());
+            } else if (function instanceof ComplexEvaluation) {
+                // Other functions that need access to definitions
+                // (eg. if) get a copy.
+                ((ComplexEvaluation) function).copyDefinitions(getDefinitions());
+            }
+            if (!function.isEvaluationNormal()) {
                 return function.applyFn(tokens);
             }
             if (tokens.isEmpty()) {
                 throw new SyntaxException("Unsupported input: " + expr);
             }
+            // Evaluate any expressions in arguments.
             TokensList tokensWithEvaluatedArgs = new TokensList();
             tokensWithEvaluatedArgs.add(tokens.get(0));
 
@@ -80,37 +85,5 @@ public abstract class ComplexEvaluation {
         } else {
             throw new SyntaxException("Invalid token: " + expr);
         }
-    }
-
-    /**
-     * Tries to match a user defined function to the expression
-     * to evaluate, then applies function.
-     */
-    Function getFunctionReady(TokensList tokens)
-            throws SyntaxException, ArityException, ClassCastException {
-
-        Function function;
-        TokensListOrToken nameOfFunctionOrFunction = tokens.get(0);
-
-        if (nameOfFunctionOrFunction instanceof Function) {
-            function = (Function) nameOfFunctionOrFunction;
-        } else {
-            Token fnName = (Token) nameOfFunctionOrFunction;
-            function = (Function) getDefinitions().get(fnName);
-
-            if (function == null) {
-                throw new SyntaxException("Unable to resolve " + fnName
-                        + " in this context.");
-            }
-        }
-        // Allow Def or Defn to change definitions.
-        if (function instanceof Define) {
-            ((ComplexEvaluation) function).setDefinitions(getDefinitions());
-        // Other functions that need access to definitions
-        // get a copy.
-        } else if (function instanceof ComplexEvaluation) {
-            ((ComplexEvaluation) function).copyDefinitions(getDefinitions());
-        }
-        return function;
     }
 }

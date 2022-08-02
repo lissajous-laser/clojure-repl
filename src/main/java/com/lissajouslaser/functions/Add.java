@@ -10,8 +10,12 @@ import com.lissajouslaser.TokensList;
  */
 public class Add implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isEvaluationNormal() {
         return true;
+    }
+
+    public boolean isDefinitionCreator() {
+        return false;
     }
 
     public Token getName() {

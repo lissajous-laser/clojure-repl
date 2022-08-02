@@ -5,12 +5,11 @@ import com.lissajouslaser.Function;
 import com.lissajouslaser.SyntaxException;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
-import com.lissajouslaser.TokensListOrToken;
 
 /**
- * Clojure first function.
+ * Clojure empty? function.
  */
-public class First implements Function {
+public class Empty implements Function {
 
     public boolean isDefinitionCreator() {
         return false;
@@ -21,29 +20,28 @@ public class First implements Function {
     }
 
     public Token getName() {
-        return new Token("first");
+        return new Token("empty?");
     }
 
     /**
-     * Returns the first element of a list. Passing an empty list
-     * to first returns nil.
+     * Returns a 'boolean' indicating if the list passed to it
+     * is empty empty or not.
      */
-    public TokensListOrToken applyFn(TokensList tokens)
+    public Token applyFn(TokensList tokens)
             throws SyntaxException, ArityException, ClassCastException {
 
         if (tokens.size() != 2) {
-            throw new ArityException("clojure.core/first");
+            throw new ArityException("clojure.core/empty?");
         }
         // Check if second arg is a list.
         TokensList secondArg = (TokensList) tokens.get(1);
         if (((Token) secondArg.get(0)).toString().equals("list")) {
 
-            if (secondArg.size() == 1) {
-                return new Token("nil"); // for empty list
+            if (secondArg.size() > 1) {
+                return new Token("false");
             }
-            return secondArg.get(1);
+            return new Token("true");
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/first" + tokens);
+        throw new SyntaxException("Illegal list passed to clojure.core/empty?" + tokens);
     }
 }
-

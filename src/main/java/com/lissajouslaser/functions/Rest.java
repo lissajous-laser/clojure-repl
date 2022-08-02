@@ -11,7 +11,11 @@ import com.lissajouslaser.TokensList;
  */
 public class Rest implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 
@@ -24,7 +28,7 @@ public class Rest implements Function {
      * empty list to rest returns an empty list.
      */
     public TokensList applyFn(TokensList tokens)
-            throws SyntaxException, ArityException {
+            throws SyntaxException, ArityException, ClassCastException {
         // The only arg passed to first should be a single list.
         // First check there is one arg.
         if (tokens.size() != 2) {
@@ -33,7 +37,7 @@ public class Rest implements Function {
         // Check arg is a list.
         TokensList secondArg = (TokensList) tokens.get(1);
         if (((Token) secondArg.get(0)).toString().equals("list")) {
-
+            // Crate duplicate list.
             TokensList list = new TokensList(secondArg);
 
             if (list.size() > 1) {

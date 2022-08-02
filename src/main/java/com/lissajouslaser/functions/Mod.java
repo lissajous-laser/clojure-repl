@@ -10,7 +10,11 @@ import com.lissajouslaser.TokensList;
  */
 public class Mod implements Function {
 
-    public boolean isEvalutionNormal() {
+    public boolean isDefinitionCreator() {
+        return false;
+    }
+
+    public boolean isEvaluationNormal() {
         return true;
     }
 
