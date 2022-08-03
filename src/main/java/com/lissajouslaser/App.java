@@ -65,11 +65,11 @@ public final class App {
         Loop loop = new Loop(evaluate, new Scanner(System.in));
         loop.start();
 
-        // TokensList  myFn = Tokeniser.run("(defn add [x y] (+ x y))");
-
-        // for (TokensListOrToken element: myFn)
-        //     System.out.println(element);
-
+        // System.out.println("(+ (+ 1 2) (+ 3 4) 5 (+ 6 7) 8 9)" + "  "
+        // + Tokeniser.run("(+ (+ 1 2) (+ 3 4) 5 (+ 6 7) 8 9)"));
+        // System.out.println("(+ (+ 1 2)(+ 3 4))" + "  " + Tokeniser.run("(+ (+ 1 2)(+ 3 4))"));
+        // System.out.println("(+ (+ 1 2)3)" + "  " + Tokeniser.run("(+ (+ 1 2)3)"));
+        // System.out.println("(+(+ 1 2) 3)" + "  " + Tokeniser.run("(+(+ 1 2) 3)"));
         // evaluate.eval("(defn curryed-division (divisor) "
         //         + "(fn (dividend) (/ dividend divisor))) ");
         // evaluate.eval("(def divide-by-2 (curryed-division 2))");

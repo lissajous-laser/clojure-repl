@@ -100,6 +100,17 @@ public class FunctionsTest {
     }
 
     @Test
+    public void modReturnsHighestPossibleWithExceedingDivisor()
+            throws SyntaxException, ArityException {
+        TokensList tokens = new TokensList();
+        String[] args = {"aFunction", "10", "-4"};
+        for (String item: args) {
+            tokens.add(new Token(item));
+        }
+        assertEquals("-2", mod.applyFn(tokens).toString());
+    }
+
+    @Test
     public void listWorks() throws ArityException, SyntaxException {
         String[] args = {"list", "3", "4", "5"};
         TokensList tokens = new TokensList(args);

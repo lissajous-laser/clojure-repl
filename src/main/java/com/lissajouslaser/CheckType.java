@@ -26,7 +26,8 @@ public final class CheckType {
      * Check if you have a symbol in the valid format.
      */
     public static boolean isValidSymbol(String expr) {
-        boolean matchesRegex = expr.matches("[A-Za-z_\\-*+/=<>][\\w\\-?]*");
+        boolean matchesRegex
+                = expr.matches("[A-Za-z_\\-*+/=<>?!][\\w\\-*+/=<>?!]*");
         return matchesRegex && !isBool(expr);
     }
 

@@ -531,4 +531,36 @@ public class EvaluateTest {
             + "(list 12 5 0 -3 -4 -3 0 5 12))"
         ).toString());
     }
+
+    @Test
+    public void tokeniserHandlesInputsWithoutOptionalSpaces1()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertEquals("6", evaluate.eval("(+(+ 1 2) 3)").toString());
+    }
+
+    @Test
+    public void tokeniserHandlesInputsWithoutOptionalSpaces2()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertEquals("6", evaluate.eval("(+ (+ 1 2)3)").toString());
+    }
+
+    @Test
+    public void tokeniserHandlesInputsWithoutOptionalSpaces3()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertEquals("10", evaluate.eval("(+ (+ 1 2)(+ 3 4))").toString());
+    }
+
+    @Test
+    public void tokeniserHandlesInputsWithoutOptionalSpaces4()
+            throws ArityException, SyntaxException {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertEquals(
+                "45",
+                evaluate.eval("(+ (+ 1 2) (+ 3 4) 5 (+ 6 7) 8 9)"
+        ).toString());
+    }
+
 }

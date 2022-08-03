@@ -13,7 +13,12 @@ public final class Tokeniser {
 
     /**
      * If input is a list it will take apart and
-     * function and arguments and put into an array.
+     * function and arguments, put each element
+     * in a Token, and put the Tokens in a
+     * TokensList. Any nested expressions are
+     * treated as a single element and put in a
+     * Token, where they can be later tokenised
+     * through recurision.
      */
     public static TokensList run(String expr) throws SyntaxException {
         TokensList tokens = new TokensList();
@@ -26,10 +31,7 @@ public final class Tokeniser {
         // and closing parens.
         int openParens = 0;
         int closeParens = 0;
-        // Checks if reader position is currently inside a
-        // nested expression.
-        boolean nestedExpr = false;
-        StringBuilder tokenBuilder = new StringBuilder();
+        StringBuilder stringBuilder = new StringBuilder();
 
         try {
             while ((i = charArrReader.read()) != -1) {
@@ -38,40 +40,34 @@ public final class Tokeniser {
                 if (closeParens > openParens) {
                     throw new SyntaxException("Unmatched parentheses.");
                 }
-
                 switch (i) {
-                    // Allows Clojure vectors to be converted to lists.
-                    // Only use is for allowing Clojure function
-                    // parameters parameters to be inputted as a
-                    // Clojure vector.
+                    // case '[' and ']' allows Clojure vectors to be converted
+                    // to lists. Only use is for allowing Clojure function
+                    // parameters to be inputted as a Clojure vector literals.
                     case '[':
                     case '(':
                         openParens++;
-                        // No action on the parens that wraps the
-                        // top level expression.
-                        if (openParens == 1) {
-                            continue;
-                            // Include parens in doubly or deeper nested
-                            // expressions.
-                        } else {
-                            nestedExpr = true;
-                            tokenBuilder.append('(');
+                        if (openParens - closeParens == 2
+                                && stringBuilder.length() != 0) {
+                            // stringBuilder.append("•<•"); ///
+                            tokens.add(new Token(stringBuilder.substring(0)));
+                            stringBuilder.delete(0, stringBuilder.length());
+                        }
+                        if (openParens != 1) {
+                            stringBuilder.append('(');
                         }
                         break;
                     case ']':
                     case ')':
                         closeParens++;
-                        if (nestedExpr) {
-                            tokenBuilder.append(')');
-                            // Does not add empty strings to tokens.
-                        } else if (tokenBuilder.length() == 0) {
-                            continue;
-                        } else {
-                            tokens.add(new Token(tokenBuilder.substring(0)));
-                            tokenBuilder.delete(0, tokenBuilder.length());
+                        if (openParens - closeParens != 0) {
+                            stringBuilder.append(')');
                         }
-                        if (openParens - closeParens == 1) {
-                            nestedExpr = false;
+                        if (openParens - closeParens < 2
+                                && stringBuilder.length() != 0) {
+                            // stringBuilder.append("•>•"); ///
+                            tokens.add(new Token(stringBuilder.substring(0)));
+                            stringBuilder.delete(0, stringBuilder.length());
                         }
                         break;
                     case ' ':
@@ -80,20 +76,16 @@ public final class Tokeniser {
                         // separating out doubly nested expression or
                         // deeper because they will be dealt with on
                         // recursion.
-                        if (nestedExpr) {
-                            tokenBuilder.append((char) i);
-                            // Does not add empty strings to tokens.
-                            // For the case if input text has double
-                            // spaces.
-                        } else if (tokenBuilder.length() == 0) {
-                            continue;
-                        } else {
-                            tokens.add(new Token(tokenBuilder.substring(0)));
-                            tokenBuilder.delete(0, tokenBuilder.length());
+                        if (openParens - closeParens > 1) {
+                            stringBuilder.append((char) i);
+                        } else if (stringBuilder.length() != 0) {
+                            // stringBuilder.append("•∆•"); ///
+                            tokens.add(new Token(stringBuilder.substring(0)));
+                            stringBuilder.delete(0, stringBuilder.length());
                         }
                         break;
                     default:
-                        tokenBuilder.append((char) i);
+                        stringBuilder.append((char) i);
                         break;
                 }
             }
