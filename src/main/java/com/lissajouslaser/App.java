@@ -64,15 +64,5 @@ public final class App {
         Evaluate evaluate = new Evaluate(definedFunctions);
         Loop loop = new Loop(evaluate, new Scanner(System.in));
         loop.start();
-
-        // System.out.println("(+ (+ 1 2) (+ 3 4) 5 (+ 6 7) 8 9)" + "  "
-        // + Tokeniser.run("(+ (+ 1 2) (+ 3 4) 5 (+ 6 7) 8 9)"));
-        // System.out.println("(+ (+ 1 2)(+ 3 4))" + "  " + Tokeniser.run("(+ (+ 1 2)(+ 3 4))"));
-        // System.out.println("(+ (+ 1 2)3)" + "  " + Tokeniser.run("(+ (+ 1 2)3)"));
-        // System.out.println("(+(+ 1 2) 3)" + "  " + Tokeniser.run("(+(+ 1 2) 3)"));
-        // evaluate.eval("(defn curryed-division (divisor) "
-        //         + "(fn (dividend) (/ dividend divisor))) ");
-        // evaluate.eval("(def divide-by-2 (curryed-division 2))");
-        // System.out.println(evaluate.eval("(divide-by-2 30)"));
     }
 }

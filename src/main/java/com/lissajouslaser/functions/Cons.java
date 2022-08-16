@@ -43,6 +43,8 @@ public class Cons implements Function {
 
             return list;
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/cons");
+        throw new SyntaxException(
+                "Invalid argument passed to clojure.core/cons:" + thirdArg
+        );
     }
 }

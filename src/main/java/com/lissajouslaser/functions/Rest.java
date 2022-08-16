@@ -45,6 +45,8 @@ public class Rest implements Function {
             }
             return list;
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/rest");
+        throw new SyntaxException(
+                "Invalid argument passed to clojure.core/rest" + secondArg
+        );
     }
 }

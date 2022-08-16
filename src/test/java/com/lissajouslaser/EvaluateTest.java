@@ -439,6 +439,14 @@ public class EvaluateTest {
     }
 
     @Test
+    public void passingNonL() {
+        Evaluate evaluate = new Evaluate(definitions);
+        assertThrows(SyntaxException.class, () -> {
+            evaluate.eval("(+ a 3");
+        });
+    }
+
+    @Test
     public void fnWorks1() throws ArityException, SyntaxException {
         Evaluate evaluate = new Evaluate(definitions);
         assertEquals("4", evaluate.eval("((fn (x) (+ x 1)) 3)").toString());
@@ -563,4 +571,14 @@ public class EvaluateTest {
         ).toString());
     }
 
+    @Test
+    public void definingAnAnonymousFunctionWithDefIsAnalagousToDefn()
+            throws SyntaxException, ArityException {
+        Evaluate evaluate = new Evaluate(definitions);
+        evaluate.eval("(def square (fn [x] (* x x)))");
+        assertEquals(
+                "49",
+                evaluate.eval("(square 7)"
+        ).toString());
+    }
 }

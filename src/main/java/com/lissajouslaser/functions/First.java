@@ -43,7 +43,9 @@ public class First implements Function {
             }
             return secondArg.get(1);
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/first" + tokens);
+        throw new SyntaxException(
+                "Invalid argument passed to clojure.core/first" + secondArg
+        );
     }
 }
 

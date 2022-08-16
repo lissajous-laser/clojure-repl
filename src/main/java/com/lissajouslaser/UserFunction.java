@@ -30,6 +30,18 @@ public class UserFunction extends ComplexEvaluation
         return name;
     }
 
+    public void setName(Token name) {
+        this.name = name;
+    }
+
+    public TokensList getParams() {
+        return params;
+    }
+
+    public Token getBody() {
+        return body;
+    }
+
     /**
      * Adds parameter-argument bindings to local scope and then
      * performs application of the function.

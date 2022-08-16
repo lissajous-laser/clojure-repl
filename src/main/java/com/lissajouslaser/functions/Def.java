@@ -8,6 +8,7 @@ import com.lissajouslaser.SyntaxException;
 import com.lissajouslaser.Token;
 import com.lissajouslaser.TokensList;
 import com.lissajouslaser.TokensListOrToken;
+import com.lissajouslaser.UserFunction;
 
 /**
  * Define values function.
@@ -40,6 +41,10 @@ public class Def extends ComplexEvaluation
         Token valueName = (Token) tokens.get(1);
         TokensListOrToken evaluatedExpr = eval((Token) tokens.get(2));
 
+        // If expression is an anonymous function.
+        if (evaluatedExpr instanceof UserFunction) {
+            ((UserFunction) evaluatedExpr).setName(valueName);
+        }
         if (CheckType.isValidSymbol(valueName.toString())) {
             getDefinitions().put(valueName, evaluatedExpr);
             // Returns value name.

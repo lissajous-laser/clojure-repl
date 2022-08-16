@@ -42,6 +42,8 @@ public class Empty implements Function {
             }
             return new Token("true");
         }
-        throw new SyntaxException("Illegal list passed to clojure.core/empty?" + tokens);
+        throw new SyntaxException(
+                "Invalid argument passed to clojure.core/empty?:" + secondArg
+        );
     }
 }

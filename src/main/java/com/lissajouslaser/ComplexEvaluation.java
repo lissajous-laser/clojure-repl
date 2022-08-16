@@ -28,14 +28,6 @@ public abstract class ComplexEvaluation {
     }
 
     /**
-     * Used by subclasses that require a copy of definitions
-     * but do not update it.
-     */
-    void copyDefinitions(Map<Token, TokensListOrToken> globalDefinitions) {
-        getDefinitions().putAll(globalDefinitions);
-    }
-
-    /**
      * Performs evaluation of expression, including evaluation
      * of nested expressions.
      */
@@ -50,12 +42,14 @@ public abstract class ComplexEvaluation {
             Function function = (Function) eval((Token) tokens.get(0));
 
             if (function.isDefinitionCreator()) {
-                // For functions that add defintiions, eg. def, defn.
+                // For functions that add defintions, eg. def, defn.
                 ((ComplexEvaluation) function).setDefinitions(getDefinitions());
             } else if (function instanceof ComplexEvaluation) {
                 // Other functions that need access to definitions
                 // (eg. if) get a copy.
-                ((ComplexEvaluation) function).copyDefinitions(getDefinitions());
+                ((ComplexEvaluation) function).setDefinitions(
+                    new HashMap<Token, TokensListOrToken>(getDefinitions())
+                );
             }
             if (!function.isEvaluationNormal()) {
                 return function.applyFn(tokens);
