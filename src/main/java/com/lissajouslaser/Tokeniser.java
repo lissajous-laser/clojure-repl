@@ -18,7 +18,7 @@ public final class Tokeniser {
      * TokensList. Any nested expressions are
      * treated as a single element and put in a
      * Token, where they can be later tokenised
-     * through recurision.
+     * through recursion.
      */
     public static TokensList run(String expr) throws SyntaxException {
         TokensList tokens = new TokensList();
